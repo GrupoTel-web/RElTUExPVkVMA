@@ -1,3 +1,0 @@
-[cron."daily-8-9"]
-schedule = "0 8,9 * * *"
-command = "python unificado.py"
