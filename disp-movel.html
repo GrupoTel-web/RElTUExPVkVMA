@@ -382,10 +382,10 @@
 
     // Use Promise.all para garantir que ambos os links sejam carregados antes de prosseguir
     Promise.all([
-      fetch('https://grupotel-web.github.io/dadosteste.json?cacheBust=' + Date.now())
+      fetch('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json?cacheBust=' + Date.now())
         .then(resp => resp.json())
         .then(data => { dadosDisponibilidade = data; }),
-      fetch('https://grupotel-web.github.io/sites.json?cacheBust=' + Date.now())
+      fetch('https://grupotel-web.github.io/RElTUExPVkVMA/sites.json?cacheBust=' + Date.now())
         .then(resp => resp.json())
         .then(data => { dadosSitesBairro = data; })
     ])
