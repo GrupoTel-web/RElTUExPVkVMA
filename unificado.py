@@ -73,8 +73,8 @@ def executar_script():
         dados_json = df_final.to_dict(orient="records")
 
         # GitHub
-        repositorio = 'GrupoTel-web/GrupoTel-web.github.io'
-        caminho_arquivo = 'dadosteste.json'
+        repositorio = 'GrupoTel-web/RElTUExPVkVMA'
+        caminho_arquivo = 'dados.json'
         url = f'https://api.github.com/repos/{repositorio}/contents/{caminho_arquivo}'
         headers = {'Authorization': f'token {token}'}
 
