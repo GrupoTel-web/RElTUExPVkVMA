@@ -230,7 +230,7 @@
   const getCrit = trio => {
     const below96 = trio.map(pv).map(v => v != null && v < 96 ? 1 : 0);
     const count = below96.reduce((a, b) => a + b, 0);
-    if (count >= 2) return 'NOK Recorrente';
+    if (count >= 2) return 'Crítico';
     if (count === 1 && below96[2] === 1) return 'Alerta'; // último mês < 96
     return 'Não Crítico';
   };
