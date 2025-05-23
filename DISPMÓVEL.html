@@ -1,0 +1,823 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/ico" href="rede.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Disponibilidade Móvel</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- jQuery UI para dropdowns estilosos -->
+
+  <!-- Carregue o jQuery primeiro -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Depois o jQuery UI -->
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-custom bg-light">
+    <div class="container"></div>
+  </nav>
+
+  <section class="hero-vivo">
+    <div class="hero-overlay"></div>
+    <div class="hero-content text-center my-4">
+      <h1>Dashboard Disponibilidade - Móvel</h1>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="dashboard d-flex justify-content-between mb-4">
+      <div class="dashboard-card total bg-primary text-white p-3 rounded" id="totalSitesCard">Total de Sites: 0</div>
+      <div class="dashboard-card bg-secondary text-white p-3 rounded" id="sitesBairroCard">Total Sites Bairro: 0</div>
+      <div class="dashboard-card red bg-danger text-white p-3 rounded" id="criticalSitesCard">Sites Críticos: 0</div>
+      <div class="dashboard-card yellow bg-warning text-white p-3 rounded" id="alertSitesCard">Sites em Alerta: 0</div>
+      <div class="dashboard-card green bg-success text-white p-3 rounded" id="nonCriticalSitesCard">Sites Não Críticos: 0</div>
+    </div>
+
+    <div class="search-card p-3 bg-white rounded shadow-sm position-relative">
+      <div class="row g-2">
+        <div class="col-md-3 position-relative">
+          <input type="text" id="dddFilterInput" placeholder="Filtrar por DDD" class="form-control input-large-bold">
+          <div id="dddDropdown" class="dropdown-list"></div>
+        </div>
+        <div class="col-md-3 position-relative">
+          <input type="text" id="muniFilterInput" placeholder="Filtrar por Município" class="form-control" style="font-size:20px;font-weight:800;">
+          <div id="muniDropdown" class="dropdown-list"></div>
+        </div>
+        <div class="col-md-3 position-relative">
+          <input type="text" id="siteFilterInput" placeholder="Filtrar por Site" class="form-control" style="font-size:20px;font-weight:800;">
+          <div id="siteDropdown" class="dropdown-list"></div>
+        </div>
+        <div class="col-md-1">
+          <button id="clearFilters" class="btn btn-secondary w-100" style="font-size:20px;font-weight:800;">Limpar</button>
+        </div>
+        <div class="col-md-2">
+          <button id="exportExcel" class="btn btn-success w-100" style="font-size:20px;font-weight:450;">Exportar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container bg-white rounded shadow-sm p-3 overflow-auto mt-3">
+      <table id="oltTable" class="table table-striped table-bordered nowrap" style="width:100%">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+      <div id="filterContainer"></div>
+    </div>
+  </div>
+
+<!-- Adicione o modal customizado para edição -->
+<div id="editModal" class="modal-overlay">
+  <div class="modal-container">
+    <button id="closeModalBtn" class="close-modal-btn">&times;</button>
+    <h4 id="modalTitle" class="modal-title">Editar Informação</h4>
+    <form id="editForm">
+
+<!-- CAUSA 1 -->
+<div class="mb-2">
+  <label class="form-label">⚠️ Causa 1</label>
+  <select class="form-select" id="causaInput1" disabled required>
+    <option value="" disabled selected>Selecione uma causa</option>
+    <option value="Rede Externa">Rede Externa</option>
+    <option value="Vandalismo">Vandalismo</option>
+    <option value="RF">RF</option>
+    <option value="Energia AC">Energia AC</option>
+    <option value="Infraestrutura">Infraestrutura</option>
+    <option value="Equipamento">Equipamento</option>
+    <option value="Transmissão">Transmissão</option>
+    <option value="Software">Software</option>
+    <option value="Implantação">Implantação</option>
+    <option value="Outro">Outro</option>
+  </select>
+  <input type="text" class="form-control mt-2" id="causaOutro1" placeholder="Descreva a causa" style="display:none;" />
+</div><br>
+
+<!-- CAUSA 2 -->
+<div class="mb-2">
+  <label class="form-label">⚠️ Causa 2</label>
+  <select class="form-select" id="causaInput2" disabled required>
+    <option value="" disabled selected>Selecione uma causa</option>
+    <option value="Rede Externa">Rede Externa</option>
+    <option value="Vandalismo">Vandalismo</option>
+    <option value="RF">RF</option>
+    <option value="Energia AC">Energia AC</option>
+    <option value="Infraestrutura">Infraestrutura</option>
+    <option value="Equipamento">Equipamento</option>
+    <option value="Transmissão">Transmissão</option>
+    <option value="Software">Software</option>
+    <option value="Implantação">Implantação</option>
+    <option value="Outro">Outro</option>
+  </select>
+  <input type="text" class="form-control mt-2" id="causaOutro2" placeholder="Descreva a causa" style="display:none;" />
+</div><br>
+
+<!-- CAUSA 3 -->
+<div class="mb-2">
+  <label class="form-label">⚠️ Causa 3</label>
+  <select class="form-select" id="causaInput3" disabled required>
+    <option value="" disabled selected>Selecione uma causa</option>
+    <option value="Rede Externa">Rede Externa</option>
+    <option value="Vandalismo">Vandalismo</option>
+    <option value="RF">RF</option>
+    <option value="Energia AC">Energia AC</option>
+    <option value="Infraestrutura">Infraestrutura</option>
+    <option value="Equipamento">Equipamento</option>
+    <option value="Transmissão">Transmissão</option>
+    <option value="Software">Software</option>
+    <option value="Implantação">Implantação</option>
+    <option value="Outro">Outro</option>
+  </select>
+  <input type="text" class="form-control mt-2" id="causaOutro3" placeholder="Descreva a causa" style="display:none;" />
+</div>
+
+
+      <div class="mb-2">
+        <label class="form-label">✅ Ação Realizada</label>
+        <input type="text" class="form-control" id="solucaoInput" required disabled>
+      </div>
+      <div class="mb-2">
+        <label class="form-label">🧑‍💼 Responsável</label>
+        <input type="text" class="form-control" id="responsavelInput" readonly>
+      </div>
+      <!-- Novo botão Editar para destravar os campos -->
+      <button type="button" id="editBtn" class="btn btn-secondary w-100 mt-2">Editar</button>
+      <button type="submit" class="btn btn-primary w-100 mt-2">Salvar</button>
+    </form>
+    <div id="modalMsg" class="modal-msg">Salvo!</div>
+  </div>
+</div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    function fetchWithCache(url, cacheKey, cacheDuration) {
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+      const now = Date.now();
+
+      if (cachedData && cacheTimestamp && (now - cacheTimestamp < cacheDuration * 1000)) {
+        return Promise.resolve(JSON.parse(cachedData));
+      }
+
+      return fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+          localStorage.setItem(`${cacheKey}_timestamp`, now);
+          return data;
+        });
+    }
+    let dadosDisponibilidade = [];
+    let dadosSitesBairro = [];
+    let currentMonths = [];
+    let table;
+    let headCols = [];
+
+    // Carrega dados
+    Promise.all([
+      fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json', 'dadosDisponibilidade', 3600).then(d => dadosDisponibilidade = d),
+      fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/sites.json', 'dadosSitesBairro', 3600).then(d => dadosSitesBairro = d)
+    ]).then(() => {
+      // Crie um mapa para lookup rápido dos dados extras do site (case-insensitive, sem espaços)
+      window.siteExtraMap = {};
+      dadosSitesBairro.forEach(site => {
+        if (site.Site) {
+          const key = String(site.Site).trim().toUpperCase();
+          window.siteExtraMap[key] = site;
+        }
+      });
+      initializeTable();
+      setupFilters();
+      setupActions();
+    }).catch(err => console.error(err));
+
+    function formatCell(value) {
+      if (value == null || value === '') return '<td></td>';
+      const n = parseFloat(value.toString().replace(',', '.'));
+      let bg = '';
+      if (n === 100) bg = '#2c681992'; // Verde escuro (Ótimo)
+      else if (n > 98) bg = '#61ca427c'; // Verde claro (Bom)
+      else if (n > 96) bg = '#f2d3387d'; // Laranja (Alerta)
+      else bg = '#f238387d'; // Vermelho (Crítico)
+      const disp = (n === 100 || n === 0) ? String(n) : n.toFixed(2).replace('.', ',');
+      return `<td style="background-color:${bg}" data-order="${n}">${disp}</td>`;
+    }
+
+    function getDynamicMonthHeaders(data) {
+      const valid = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const keys = Object.keys(data[0] || {}).filter(k => valid.includes(k));
+      const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      keys.sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b));
+      return keys.map(m => { if (!currentMonths.includes(m)) currentMonths.push(m); return { key:m, display:m }; });
+    }
+    function calculateColumns(item) {
+  const pv = v => v == null || v === '' ? null : parseFloat(v.toString().replace(',', '.'));
+
+  const getCrit = trio => {
+    const below96 = trio.map(pv).map(v => v != null && v < 96 ? 1 : 0);
+    const count = below96.reduce((a, b) => a + b, 0);
+    if (count >= 2) return 'NOK Recorrente';
+    if (count === 1 && below96[2] === 1) return 'Alerta'; // último mês < 96
+    return 'Não Crítico';
+  };
+
+  const feb = pv(item['Feb']);
+  const mar = pv(item['Mar']);
+  const apr = pv(item['Apr']);
+  const may = pv(item['May']);
+
+  const critical1 = getCrit([feb, mar, apr]); // Criticidade Abril
+  const critical2 = getCrit([mar, apr, may]); // Criticidade Maio
+
+  // Projeções
+  const recentVals = [feb, mar, apr, may].filter(v => v != null);
+  const avg = recentVals.length ? (recentVals.reduce((sum, v) => sum + v, 0) / recentVals.length).toFixed(2).replace('.', ',') : '0';
+  const stim = recentVals.length ? ((recentVals.reduce((sum, v) => sum + v, 0) + (31 - recentVals.length) * 100) / 31).toFixed(2).replace('.', ',') : '0';
+
+  return { critical1, critical2, projMedia: avg, projEstimulada: stim };
+}
+
+
+
+
+
+    function initializeTable() {
+      const today = new Date();
+      const dateHeaders = [];
+      for (let i = 8; i >= 1; i--) {
+        const d = new Date(today); d.setDate(d.getDate()-i);
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        dateHeaders.push({ key:`${dd}/${mm}/${d.getFullYear()}`, display:`Disp. ${dd}/${mm}` });
+      }
+      const monthHeaders = getDynamicMonthHeaders(dadosDisponibilidade);
+      const lastMonths = monthHeaders.slice(-2);
+
+      dadosDisponibilidade = dadosDisponibilidade.map(item => {
+        const cols = calculateColumns(item, monthHeaders, dateHeaders);
+        return { ...item,
+          [`Criticidade ${lastMonths[0].display}`]: cols.critical1,
+          [`Criticidade ${lastMonths[1].display}`]: cols.critical2,
+          'Proj. Média': cols.projMedia,
+          'Proj. Estimulada 100%': cols.projEstimulada
+        };
+      });
+
+      // Adicione as novas colunas ao cabeçalho após MUNICIPIO
+      headCols = [
+        'DDD',
+        'MUNICIPIO',
+        'Bairros',
+        'TAV?',
+        'Bairro Alto Valor',
+        'SITE',
+        ...monthHeaders.map(m=>m.display),
+        ...dateHeaders.map(h=>h.display),
+        `Criticidade ${lastMonths[0].display}`,
+        `Criticidade ${lastMonths[1].display}`,'Proj. Média','Proj. Estimulada 100%'
+      ];
+      const theadHtml = `
+        <tr>
+          ${headCols.map((c, i) => `
+            <th>
+              ${c} <button class="filter-btn" data-column="${i}" style="border:none;background:none;">▼</button>
+              <div class="filter-popup" data-column="${i}" style="display:none;position:absolute;z-index:1000;background:white;border:1px solid #ccc;padding:10px;">
+                <input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar...">
+                <div class="filter-options" style="max-height:150px;overflow:auto;"></div>
+                <button class="apply-filter btn btn-sm btn-primary mt-2">Aplicar</button>
+                <button class="clear-filter btn btn-sm btn-secondary mt-1">Limpar</button>
+              </div>
+            </th>`).join('')}
+        </tr>`;
+      $('#oltTable thead').html(theadHtml);
+      $('#oltTable thead').html(theadHtml);
+
+      let html='';
+      dadosDisponibilidade.forEach((it, rowIdx)=>{
+        html+='<tr>';
+        // DDD
+        html += `<td>${it['DDD']||''}</td>`;
+        // MUNICIPIO
+        html += `<td>${it['MUNICIPIO']||''}</td>`;
+        // Novas colunas do sites.json (lookup corrigido)
+        let siteKey = String(it['SITE'] || '').trim().toUpperCase();
+        const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
+        // Debug: veja se o site está sendo encontrado
+        // console.log('SITE:', it['SITE'], '->', siteKey, 'siteExtra:', siteExtra);
+        html += `<td>${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
+        html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
+        html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
+        // SITE
+        html += `<td>${it['SITE']||''}</td>`;
+        // Meses dinâmicos
+        monthHeaders.forEach((m, colIdx)=>{
+          const val = it[m.key];
+          const n = val == null || val === '' ? null : parseFloat(val.toString().replace(',', '.'));
+          let bg = '';
+          if (n === 100) bg = '#2c681992';
+          else if (n > 98) bg = '#61ca427c';
+          else if (n > 96) bg = '#f2d3387d';
+          else if (n != null) bg = '#f238387d';
+          const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
+          html += `<td class="month-cell" style="background-color:${bg}; cursor:pointer;" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE']||''}">${disp}</td>`;
+        });
+        dateHeaders.forEach(h=> html+=formatCell(it[h.key]));
+        html+=`<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
+        html+=`<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
+        html+=`<td>${it['Proj. Média']}</td><td>${it['Proj. Estimulada 100%']}</td>`;
+        html+='</tr>';
+      });
+      $('#oltTable tbody').html(html);
+
+      // Atualização: Inicialização do DataTable com filtros avançados
+      table = $('#oltTable').DataTable({
+  paging:true,
+  pageLength:20,
+  ordering:true,
+  order:[[0,'asc']], 
+  scrollX:true,
+  language:{
+    paginate:{previous:'Anterior',next:'Próximo'},
+    info:'Mostrando _START_ a _END_ de _TOTAL_',
+    infoEmpty:'Mostrando 0 a 0 de 0',
+    zeroRecords:'Nenhum registro encontrado',
+    search:''
+  },
+  columnDefs: [
+    { targets: '_all', orderable: false } // <- isso desativa clique nos THs
+  ]
+});
+
+
+      $('.filter-btn').on('click', function (e) {
+  e.stopPropagation();
+  $('.filter-popup').hide();
+  const index = $(this).data('column');
+  let popup = $('#filterContainer');
+  popup.empty();
+
+  // Cabeçalho do popup
+  let header = $(`
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-weight:bold;font-size:18px;">Filtro Avançado</span>
+      <button class="close-popup btn btn-sm btn-outline-secondary" style="margin-left:10px;">×</button>
+    </div>
+    <hr style="margin:8px 0;">
+  `);
+
+  // Busca
+  let searchInput = $('<input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar valor...">');
+
+  // Filtro por valor vazio/não vazio
+  let emptyFilter = $(`
+    <div class="mb-2" style="font-size:15px;">
+      <label><input type="checkbox" class="filter-empty" value="empty"> Somente vazios</label>
+      <label style="margin-left:10px;"><input type="checkbox" class="filter-notempty" value="notempty"> Somente preenchidos</label>
+    </div>
+  `);
+
+  // Filtro por cor (apenas para colunas de disponibilidade)
+  let colorFilter = null;
+  if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}/i.test(headCols[index])) {
+    colorFilter = $(`
+      <div class="mb-2" style="font-size:15px;">
+        <span style="margin-right:8px;">Cor:</span>
+        <span class="color-dot" data-color="darkgreen" style="background:#2c681992;" title="Ótimo"></span>
+        <span class="color-dot" data-color="lightgreen" style="background:#61ca427c;" title="Bom"></span>
+        <span class="color-dot" data-color="orange" style="background:#f2d3387d;" title="Alerta"></span>
+        <span class="color-dot" data-color="red" style="background:#f238387d;" title="Crítico"></span>
+        <span class="color-dot" data-color="all" style="background:#ccc;border:1px solid #888;" title="Todas"></span>
+      </div>
+    `);
+  }
+
+  // Opções de valores únicos (checkboxes)
+  let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
+  const values = new Set();
+  table.column(index).data().each(function (val) {
+    if (val) values.add(val.trim());
+  });
+  [...values].sort().forEach(v => {
+    filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
+  });
+
+  // Ordenação
+  let sortBtns = $(`
+    <div class="filter-sort mb-2" style="font-size:15px;">
+      <span style="margin-right:8px;">Ordenar:</span>
+      <button class="btn btn-sm btn-outline-primary sort-asc">A-Z/↑</button>
+      <button class="btn btn-sm btn-outline-primary sort-desc">Z-A/↓</button>
+      <button class="btn btn-sm btn-outline-secondary sort-clear">Limpar</button>
+    </div>
+  `);
+
+  // Botões aplicar/limpar
+  let applyButton = $('<button class="apply-filter btn btn-success w-100 mt-2">Aplicar Filtro</button>');
+  let clearButton = $('<button class="clear-filter btn btn-secondary w-100 mt-1">Limpar Filtros</button>');
+
+  // Monta o popup
+  popup.append(header);
+  popup.append(searchInput);
+  popup.append(emptyFilter);
+  if (colorFilter) popup.append(colorFilter);
+  popup.append(filterOptions);
+  popup.append(sortBtns);
+  popup.append(applyButton);
+  popup.append(clearButton);
+
+  // Estilo e posição
+  popup.css({
+    position: 'absolute',
+    zIndex: 9999,
+    top: e.pageY + 10,
+    left: e.pageX + 10,
+    minWidth: '260px',
+    maxWidth: '350px',
+    background: '#fff',
+    border: '1px solid #bbb',
+    borderRadius: '10px',
+    boxShadow: '0 4px 18px rgba(0,0,0,0.13)',
+    padding: '18px 18px 12px 18px',
+    display: 'block'
+  }).data('column', index);
+
+  // Fechar popup
+  popup.find('.close-popup').on('click', function () { popup.hide(); });
+
+  // Busca dinâmica
+  searchInput.on('keyup', function () {
+    let filterValue = $(this).val().toLowerCase();
+    filterOptions.find('div').each(function () {
+      let label = $(this).text().toLowerCase();
+      $(this).toggle(label.includes(filterValue));
+    });
+  });
+
+  // Filtro por vazio/não vazio
+  popup.find('.filter-empty').on('change', function () {
+    if (this.checked) popup.find('.filter-notempty').prop('checked', false);
+  });
+  popup.find('.filter-notempty').on('change', function () {
+    if (this.checked) popup.find('.filter-empty').prop('checked', false);
+  });
+
+  // Filtro por cor
+  if (colorFilter) {
+    colorFilter.find('.color-dot').on('click', function () {
+      colorFilter.find('.color-dot').removeClass('selected');
+      $(this).addClass('selected');
+    });
+  }
+
+  // Ordenação
+  sortBtns.find('.sort-asc').on('click', function () {
+    console.log("Sort Asc Clicked, index:", index); // Debugging
+    table.order([index, 'asc']).draw();
+  });
+  sortBtns.find('.sort-desc').on('click', function () {
+    console.log("Sort Desc Clicked, index:", index); // Debugging
+    table.order([index, 'desc']).draw();
+  });
+  sortBtns.find('.sort-clear').on('click', function () {
+    console.log("Sort Clear Clicked"); // Debugging
+    table.order([]).draw();
+  });
+
+  // Aplicar filtro
+  applyButton.on('click', function () {
+    let regex = '';
+    // Filtro por valor vazio/não vazio
+    if (popup.find('.filter-empty').prop('checked')) {
+      regex = '^\\s*$';
+    } else if (popup.find('.filter-notempty').prop('checked')) {
+      regex = '^\\s*\\S+';
+    } else {
+      // Filtro por valores selecionados
+      const vals = filterOptions.find('input[type="checkbox"]:checked').map(function () {
+        return '^' + $.fn.dataTable.util.escapeRegex($(this).val()) + '$';
+      }).get();
+      regex = vals.join('|');
+    }
+    // Filtro por cor
+    if (colorFilter) {
+      const selectedColor = colorFilter.find('.color-dot.selected').data('color');
+      if (selectedColor && selectedColor !== 'all') {
+        // Adiciona regex para cor (baseado em valor)
+        if (selectedColor === 'darkgreen') regex = regex ? `(?=.*${regex})^100$` : '^100$';
+        if (selectedColor === 'lightgreen') regex = regex ? `(?=.*${regex})(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)` : '(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)';
+        if (selectedColor === 'orange') regex = regex ? `(?=.*${regex})(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)` : '(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)';
+        if (selectedColor === 'red') regex = regex ? `(?=.*${regex})(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)` : '(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)';
+      }
+    }
+    table.column(index).search(regex, true, false).draw();
+    popup.hide();
+  });
+
+  // Limpar filtro
+  clearButton.on('click', function () {
+    table.column(index).search('').draw();
+    filterOptions.find('input[type="checkbox"]').prop('checked', false);
+    popup.find('.filter-empty, .filter-notempty').prop('checked', false);
+    if (colorFilter) colorFilter.find('.color-dot').removeClass('selected');
+    popup.hide();
+  });
+});
+
+
+      updateCards();
+
+      // Evento de clique nas células de mês
+      $('#oltTable tbody').on('click', 'td.month-cell', function() {
+        const $td = $(this);
+        const rowIdx = $td.data('row');
+        const colKey = $td.data('colkey');
+        const colDisplay = $td.data('coldisplay');
+        const site = $td.data('site');
+        const rowData = dadosDisponibilidade ? dadosDisponibilidade[rowIdx] : null;
+
+        if (rowData) {
+          showEditModal(rowData, colKey, colDisplay, this);
+        } else {
+          console.error('Dados de linha não encontrados para o índice:', rowIdx);
+        }
+      });
+    }
+
+  function updateCards() {
+      if (!dadosSitesBairro || !dadosDisponibilidade) {
+        console.error('Dados indisponíveis para atualizar os cartões.');
+        return;
+      }
+
+      const bairroSet = new Set(dadosSitesBairro.map(s => s.Site));
+      const filtered = dadosDisponibilidade.filter(i => bairroSet.has(i.SITE));
+      const total = filtered.length;
+
+  // Encontra o nome da coluna de critical2
+  const crit2ColName = headCols.find(c => c.startsWith('Criticidade') && c.includes(currentMonths.at(-1)));
+
+  let crit = 0, alert = 0, nonc = 0;
+  filtered.forEach(i => {
+    const val = i[crit2ColName];
+    if (val === 'Crítico') crit++;
+    else if (val === 'Alerta') alert++;
+    else nonc++;
+  });
+
+  $('#totalSitesCard').text(`Total de Sites: ${dadosDisponibilidade.length}`);
+  $('#sitesBairroCard').text(`Total Sites Bairro: ${total}`);
+  $('#criticalSitesCard').text(`Sites Críticos: ${crit}`);
+  $('#alertSitesCard').text(`Sites em Alerta: ${alert}`);
+  $('#nonCriticalSitesCard').text(`Sites Não Críticos: ${nonc}`);
+}
+
+  
+
+    function setupFilters() {
+      function populate(selector, field) {
+        const set = new Set(dadosDisponibilidade.map(i=>i[field]?.trim()));
+        const drop = $(selector).empty();
+        drop.append(`<div class="filter-item" data-value="select-all"><input type="checkbox" class="select-all-checkbox"> Selecionar Todos</div>`);
+        set.forEach(v=>{ if(v) drop.append(`<div class="filter-item" data-value="${v}"><input type="checkbox" class="filter-checkbox" data-value="${v}"> ${v}</div>`); });
+      }
+      populate('#dddDropdown','DDD');
+      populate('#muniDropdown','MUNICIPIO');
+      populate('#siteDropdown','SITE');
+
+      function setup(inputSel, dropSel, colIndex) {
+        const input=$(inputSel), dropdown=$(dropSel), selected=new Set(); let focusIdx=-1;
+        input.on('focus input', ()=>{
+          dropdown.addClass('active');
+          const q=input.val().toLowerCase();
+          const items=dropdown.children().filter(function(){return $(this).text().toLowerCase().includes(q);});
+          dropdown.children().hide(); items.show(); items.removeClass('focused');
+          if(items.length){ focusIdx=0; $(items[0]).addClass('focused'); } else focusIdx=-1;
+        });
+        dropdown.on('click','.filter-item',function(e){ e.stopPropagation(); const cb=$(this).find('input'); const val=$(this).data('value');
+          if(val==='select-all'){ const chk=cb.prop('checked'); dropdown.find('.filter-checkbox').prop('checked',chk);
+            if(chk) dropdown.find('.filter-checkbox').each((_,c)=>selected.add($(c).data('value')));
+            else selected.clear();
+          } else {
+            cb.prop('checked',!cb.prop('checked'));
+            if(cb.prop('checked')) selected.add(val);
+            else{ selected.delete(val); dropdown.find('.select-all-checkbox').prop('checked',false); }
+          }
+          table.column(colIndex).search([...selected].join('|'),true,false).draw();
+        });
+        input.on('keydown',e=>{
+          const items=dropdown.children(':visible');
+          if(e.key==='ArrowDown'){ e.preventDefault(); focusIdx=(focusIdx+1)%items.length; items.removeClass('focused'); $(items[focusIdx]).addClass('focused'); }
+          else if(e.key==='ArrowUp'){ e.preventDefault(); focusIdx=(focusIdx-1+items.length)%items.length; items.removeClass('focused'); $(items[focusIdx]).addClass('focused'); }
+          else if(e.key==='Enter'){ e.preventDefault(); if(focusIdx>=0) $(items[focusIdx]).trigger('click'); }
+        });
+        $(document).click(e=>{ if(!$(e.target).closest(inputSel+','+dropSel).length) dropdown.removeClass('active'); });
+      }
+      setup('#dddFilterInput','#dddDropdown',0);
+      setup('#muniFilterInput','#muniDropdown',1);
+      setup('#siteFilterInput','#siteDropdown',2);
+    }
+
+    function setupActions() {
+  $('#clearFilters').on('click', () => {
+    table.search('').columns().search('').draw();
+    $('.filter-checkbox, .select-all-checkbox').prop('checked', false);
+    $('.dropdown-list').removeClass('active');
+  });
+
+  $('#exportExcel').on('click', () => {
+    const data = table.rows({ search: 'applied' }).nodes().toArray()
+      .map(r => $(r).find('td').toArray().map(c => $(c).text().trim()));
+    const ws = XLSX.utils.aoa_to_sheet([headCols, ...data]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Disponibilidade');
+    XLSX.writeFile(wb, 'Disponibilidade_Móvel.xlsx');
+  });
+
+  const bairroRegex = dadosSitesBairro.map(s => `^${s.Site}$`).join('|');
+  const crit2Idx = headCols.findIndex(c => c.startsWith('Criticidade') && c.includes(currentMonths.at(-1)));
+
+  function cardFilter(id, crit, showAll = false) {
+    $(id).off('click').on('click', () => {
+      table.search('').columns().search('').draw();
+
+      if (!showAll) {
+        table.column(2).search(bairroRegex, true, false); // filtro por SITE (bairro)
+      }
+
+      if (crit) {
+        table.column(crit2Idx).search(`^${crit}$`, true, false);
+      }
+
+      table.draw();
+    });
+  }
+
+  // 🔧 Agora esse aqui limpa tudo e mostra todos os sites
+  cardFilter('#totalSitesCard', null, true);
+  cardFilter('#sitesBairroCard', null);
+  cardFilter('#criticalSitesCard', 'Crítico');
+  cardFilter('#alertSitesCard', 'Alerta');
+  cardFilter('#nonCriticalSitesCard', 'Não Crítico');
+}
+
+    // --- Firebase Configuração ---
+    const firebaseConfig = {
+  apiKey: "AIzaSyC0WOkW73igO0B2LFVKDJr7uveWPf4d4Uk",
+  authDomain: "database-dispmovel.firebaseapp.com",
+  databaseURL: "https://database-dispmovel-default-rtdb.firebaseio.com",
+  projectId: "database-dispmovel",
+  storageBucket: "database-dispmovel.firebasestorage.app",
+  messagingSenderId: "245395632820",
+  appId: "1:245395632820:web:2f1068109246d5d9541de1",
+  measurementId: "G-2C1X826GKM"
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- Modal lógica ---
+    let currentEdit = null;
+    function showEditModal(rowData, colKey, colDisplay, cellElem) {
+  currentEdit = { rowData, colKey, cellElem };
+  const disponibilidade = rowData[colKey]; 
+
+  // Determina a cor do texto com base no valor da disponibilidade
+  let disponibilidadeColor = '';
+  const n = parseFloat(disponibilidade.toString().replace(',', '.'));
+  if (n === 100) {
+    disponibilidadeColor = '#2c681992'; // Verde escuro
+  } else if (n > 98) {
+    disponibilidadeColor = '#61ca427c'; // Verde claro
+  } else if (n > 96) {
+    disponibilidadeColor = '#f2d3387d'; // Laranja
+  } else {
+    disponibilidadeColor = '#f238387d'; // Vermelho
+  }
+
+  // Atualiza o título do modal com a formatação de cor no texto
+  $('#modalTitle').html(`Editar: ${rowData['SITE']} - ${colDisplay} - <span style="color:${disponibilidadeColor}; font-weight:bold;">${disponibilidade}%</span>`);
+
+  $('#modalMsg').hide();
+  $('#editForm')[0].reset();
+
+  // Garante os campos inicialmente trancados
+  $('#causaInput1, #causaInput2,#causaInput3, #solucaoInput, #responsavelInput').prop('disabled', true);
+  $('#editBtn').text('Editar');
+
+  // Carregar dados do Firebase
+  const id = btoa(`${rowData['SITE']}|${colKey}`);
+  db.ref('dispmovel/' + id).once('value').then(snap => {
+    const val = snap.val() || {};
+    $('#causaInput1').val(val.causa1 || '');
+    $('#causaInput2').val(val.causa2 || '');
+    $('#causaInput3').val(val.causa3 || '');
+    $('#solucaoInput').val(val.solucao || '');
+    $('#responsavelInput').val(val.responsavel || '');
+    $('#editModal').css('display', 'flex');
+  });
+}
+    $('#closeModalBtn').on('click', () => $('#editModal').hide());
+    $('#editModal').on('click', function(e) {
+      if (e.target === this) $(this).hide();
+    });
+    $('#editForm').on('submit', function(e) {
+      e.preventDefault();
+      if (!currentEdit) return;
+      const { rowData, colKey, cellElem } = currentEdit;
+      const id = btoa(`${rowData['SITE']}|${colKey}`);
+      const data = {
+        causa1: $('#causaInput1').val(),
+        causa2: $('#causaInput2').val(),
+        causa3: $('#causaInput3').val(),
+        solucao: $('#solucaoInput').val(),
+        responsavel: $('#responsavelInput').val()
+      };
+      db.ref('dispmovel/' + id).set(data, err => {
+        if (!err) {
+          $('#modalMsg').show().delay(1200).fadeOut();
+          $(cellElem).attr('data-hasinfo', '1');
+        }
+      });
+    });
+    $('#editBtn').on('click', function(){
+      const inputs = $('#causaInput1, #causaInput2, #causaInput3, #solucaoInput, #responsavelInput');
+      const isDisabled = inputs.prop('disabled');
+      inputs.prop('disabled', !isDisabled);
+      // Alterna o texto do botão conforme o estado dos campos
+      $(this).text(isDisabled ? 'Bloquear' : 'Editar');
+    });
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const causas = [1, 2, 3];
+
+    causas.forEach(num => {
+      const select = document.getElementById(`causaInput${num}`);
+      const outro = document.getElementById(`causaOutro${num}`);
+
+      select.addEventListener('change', function () {
+        if (this.value === 'Outro') {
+          outro.style.display = 'block';
+          outro.required = true;
+        } else {
+          outro.style.display = 'none';
+          outro.required = false;
+          outro.value = '';
+        }
+      });
+    });
+
+    document.getElementById('editBtn').addEventListener('click', () => {
+      causas.forEach(num => {
+        document.getElementById(`causaInput${num}`).disabled = false;
+        document.getElementById(`causaOutro${num}`).disabled = false;
+      });
+
+      document.getElementById('solucaoInput').disabled = false;
+      document.getElementById('responsavelInput').disabled = false;
+    });
+  });
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Checa se já temos o nome salvo
+    let nomeUsuario = localStorage.getItem("nomeUsuario");
+
+    // Se não, tenta perguntar e salvar
+    if (!nomeUsuario) {
+      const agente = navigator.userAgent;
+      console.log("Navegador e sistema detectados:", agente); // apenas informativo
+
+      nomeUsuario = prompt("Digite seu nome (isso será salvo no navegador):");
+      if (nomeUsuario) {
+        localStorage.setItem("nomeUsuario", nomeUsuario);
+      }
+    }
+
+    // Ao clicar no botão "Editar"
+    document.getElementById('editBtn').addEventListener('click', () => {
+      const input = document.getElementById('responsavelInput');
+      input.disabled = false;
+
+      if (nomeUsuario) {
+        input.value = nomeUsuario;
+      }
+    });
+  });
+  </script>
+</body>
+</html>
