@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <link rel="icon" type="image/ico" href="rede.ico">
@@ -10,14 +9,15 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- DataTables CSS -->
   <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="index.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- jQuery UI para dropdowns estilosos -->
-
-  <!-- Carregue o jQuery primeiro -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Depois o jQuery UI -->
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+</head>
+<body>
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
 
@@ -46,22 +46,25 @@
     <div class="search-card p-3 bg-white rounded shadow-sm position-relative">
       <div class="row g-2">
         <div class="col-md-3 position-relative">
-          <input type="text" id="dddFilterInput" placeholder="Filtrar por DDD" class="form-control input-large-bold">
+          <input type="text" id="dddFilterInput" placeholder="Filtrar por DDD" class="form-control input-large-bold" style="font-size:25px;font-weight:700;">
           <div id="dddDropdown" class="dropdown-list"></div>
         </div>
         <div class="col-md-3 position-relative">
-          <input type="text" id="muniFilterInput" placeholder="Filtrar por Município" class="form-control" style="font-size:20px;font-weight:800;">
+          <input type="text" id="muniFilterInput" placeholder="Filtrar por Município" class="form-control" style="font-size:25px;font-weight:700;">
           <div id="muniDropdown" class="dropdown-list"></div>
         </div>
         <div class="col-md-3 position-relative">
-          <input type="text" id="siteFilterInput" placeholder="Filtrar por Site" class="form-control" style="font-size:20px;font-weight:800;">
+          <input type="text" id="siteFilterInput" placeholder="Filtrar por Site" class="form-control" style="font-size:25px;font-weight:700;">
           <div id="siteDropdown" class="dropdown-list"></div>
         </div>
         <div class="col-md-1">
-          <button id="clearFilters" class="btn btn-secondary w-100" style="font-size:20px;font-weight:800;">Limpar</button>
+          <button id="clearFilters" class="btn btn-secondary w-100" style="font-size:25px;font-weight:450;">Limpar</button>
         </div>
-        <div class="col-md-2">
-          <button id="exportExcel" class="btn btn-success w-100" style="font-size:20px;font-weight:450;">Exportar</button>
+        <div class="col-md-1">
+          <button id="exportExcel" class="btn btn-success w-100" style="font-size:25px;font-weight:450;">Exportar</button>
+        </div>
+        <div class="col-md-1">
+          <button id="exportCausas" class="btn btn-info w-100" style="font-size:25px;font-weight:450;">Exportar Causas</button>
         </div>
       </div>
     </div>
@@ -146,7 +149,7 @@
       </div>
       <div class="mb-2">
         <label class="form-label">🧑‍💼 Responsável</label>
-        <input type="text" class="form-control" id="responsavelInput" required disabled>
+        <input type="text" class="form-control" id="responsavelInput" readonly>
       </div>
       <!-- Novo botão Editar para destravar os campos -->
       <button type="button" id="editBtn" class="btn btn-secondary w-100 mt-2">Editar</button>
@@ -222,34 +225,50 @@
       const keys = Object.keys(data[0] || {}).filter(k => valid.includes(k));
       const monthOrder = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       keys.sort((a, b) => monthOrder.indexOf(a) - monthOrder.indexOf(b));
-      return keys.map(m => { if (!currentMonths.includes(m)) currentMonths.push(m); return { key:m, display:m }; });
+      const monthMap = {
+  Jan: 'Jan',
+  Feb: 'Feb',
+  Mar: 'Mar',
+  Apr: 'Apr',
+  May: 'May',
+  Jun: 'Jun',
+  Jul: 'Jul',
+  Aug: 'Aug',
+  Sep: 'Sep',
+  Oct: 'Oct',
+  Nov: 'Nov',
+  Dec: 'Dez'
+};
+
+return keys.map(m => {
+  if (!currentMonths.includes(m)) currentMonths.push(m);
+  return { key: m, display: monthMap[m] || m };
+});
+
     }
-    function calculateColumns(item) {
+    function calculateColumns(item, monthHeaders) {
   const pv = v => v == null || v === '' ? null : parseFloat(v.toString().replace(',', '.'));
 
+  const recentKeys = monthHeaders.slice(-4).map(h => h.key); // Pega os últimos 4 (em inglês, ex: ['Feb', 'Mar', 'Apr', 'May'])
+  const recentVals = recentKeys.map(k => pv(item[k])).filter(v => v != null);
+
   const getCrit = trio => {
-    const below96 = trio.map(pv).map(v => v != null && v < 96 ? 1 : 0);
+    const below96 = trio.map(v => v != null && v < 96 ? 1 : 0);
     const count = below96.reduce((a, b) => a + b, 0);
     if (count >= 2) return 'Crítico';
-    if (count === 1 && below96[2] === 1) return 'Alerta'; // último mês < 96
+    if (count === 1 && below96[2] === 1) return 'Alerta';
     return 'Não Crítico';
   };
 
-  const feb = pv(item['Feb']);
-  const mar = pv(item['Mar']);
-  const apr = pv(item['Apr']);
-  const may = pv(item['May']);
+  const critical1 = getCrit(recentVals.slice(0, 3)); // últimos 3
+  const critical2 = getCrit(recentVals.slice(1));    // do segundo ao quarto
 
-  const critical1 = getCrit([feb, mar, apr]); // Criticidade Abril
-  const critical2 = getCrit([mar, apr, may]); // Criticidade Maio
-
-  // Projeções
-  const recentVals = [feb, mar, apr, may].filter(v => v != null);
   const avg = recentVals.length ? (recentVals.reduce((sum, v) => sum + v, 0) / recentVals.length).toFixed(2).replace('.', ',') : '0';
   const stim = recentVals.length ? ((recentVals.reduce((sum, v) => sum + v, 0) + (31 - recentVals.length) * 100) / 31).toFixed(2).replace('.', ',') : '0';
 
   return { critical1, critical2, projMedia: avg, projEstimulada: stim };
 }
+
 
 
 
@@ -268,7 +287,7 @@
       const lastMonths = monthHeaders.slice(-2);
 
       dadosDisponibilidade = dadosDisponibilidade.map(item => {
-        const cols = calculateColumns(item, monthHeaders, dateHeaders);
+        const cols = calculateColumns(item, monthHeaders);
         return { ...item,
           [`Criticidade ${lastMonths[0].display}`]: cols.critical1,
           [`Criticidade ${lastMonths[1].display}`]: cols.critical2,
@@ -294,7 +313,7 @@
         <tr>
           ${headCols.map((c, i) => `
             <th>
-              ${c} <button class="filter-btn" data-column="${i}" style="border:none;background:none;">▼</button>
+              ${c} <button class="filter-btn" data-column="${i}" style="border:none;background:none;size: 20px;">▼</button>
               <div class="filter-popup" data-column="${i}" style="display:none;position:absolute;z-index:1000;background:white;border:1px solid #ccc;padding:10px;">
                 <input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar...">
                 <div class="filter-options" style="max-height:150px;overflow:auto;"></div>
@@ -316,8 +335,6 @@
         // Novas colunas do sites.json (lookup corrigido)
         let siteKey = String(it['SITE'] || '').trim().toUpperCase();
         const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
-        // Debug: veja se o site está sendo encontrado
-        // console.log('SITE:', it['SITE'], '->', siteKey, 'siteExtra:', siteExtra);
         html += `<td>${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
         html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
         html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
@@ -372,12 +389,28 @@
 
   // Cabeçalho do popup
   let header = $(`
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-weight:bold;font-size:18px;">Filtro Avançado</span>
-      <button class="close-popup btn btn-sm btn-outline-secondary" style="margin-left:10px;">×</button>
-    </div>
-    <hr style="margin:8px 0;">
-  `);
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-weight:bold;font-size:18px;">Filtro Avançado</span>
+    <button class="close-popup" 
+            style="
+              width: 32px; 
+              height: 32px; 
+              border-radius: 50%; 
+              background-color: #dee2e6; 
+              border: none; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              font-size: 16px;
+              line-height: 1;
+              padding: 0;
+              cursor: pointer;
+            ">
+      &times;
+    </button>
+  </div>
+  <hr style="margin:8px 0;">
+`);
 
   // Busca
   let searchInput = $('<input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar valor...">');
@@ -444,7 +477,7 @@
     position: 'absolute',
     zIndex: 9999,
     top: e.pageY + 10,
-    left: e.pageX + 10,
+    left: e.pageX + 160,
     minWidth: '260px',
     maxWidth: '350px',
     background: '#fff',
@@ -452,7 +485,8 @@
     borderRadius: '10px',
     boxShadow: '0 4px 18px rgba(0,0,0,0.13)',
     padding: '18px 18px 12px 18px',
-    display: 'block'
+    display: 'block',
+    zoom: '140%'
   }).data('column', index);
 
   // Fechar popup
@@ -568,7 +602,12 @@
       const total = filtered.length;
 
   // Encontra o nome da coluna de critical2
-  const crit2ColName = headCols.find(c => c.startsWith('Criticidade') && c.includes(currentMonths.at(-1)));
+  const mesAtual = currentMonths.at(-1)?.toLowerCase();
+  const crit2ColName = headCols.find(c =>
+  c.toLowerCase().includes('criticidade') &&
+  c.toLowerCase().includes(mesAtual)
+);
+ 
 
   let crit = 0, alert = 0, nonc = 0;
   filtered.forEach(i => {
@@ -647,24 +686,92 @@
     XLSX.writeFile(wb, 'Disponibilidade_Móvel.xlsx');
   });
 
-  const bairroRegex = dadosSitesBairro.map(s => `^${s.Site}$`).join('|');
-  const crit2Idx = headCols.findIndex(c => c.startsWith('Criticidade') && c.includes(currentMonths.at(-1)));
+  $('#exportCausas').on('click', async () => {
+  const rows = table.rows({ search: 'applied' }).nodes().toArray();
+  const exportData = [];
 
-  function cardFilter(id, crit, showAll = false) {
-    $(id).off('click').on('click', () => {
-      table.search('').columns().search('').draw();
-
-      if (!showAll) {
-        table.column(2).search(bairroRegex, true, false); // filtro por SITE (bairro)
-      }
-
-      if (crit) {
-        table.column(crit2Idx).search(`^${crit}$`, true, false);
-      }
-
-      table.draw();
-    });
+  if (!rows.length) {
+    return;
   }
+
+  for (let i = 0; i < rows.length; i++) {
+    const tds = $(rows[i]).find('td');
+    const site = $(tds[5]).text().trim();
+    const rowIdx = $(tds[0]).closest('tr').index();
+    const rowData = dadosDisponibilidade[rowIdx];
+
+    if (!site || !rowData) {
+      continue;
+    }
+
+    for (const month of currentMonths) {
+      const colKey = month;
+      const id = btoa(`${site.trim()}|${colKey.trim()}`);
+
+      try {
+        const snap = await db.ref('dispmovel/' + id).once('value');
+        const val = snap.val();
+
+        if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
+          exportData.push({
+            SITE: site,
+            MUNICIPIO: rowData['MUNICIPIO'] || '',
+            MÊS: colKey,
+            DISPONIBILIDADE: rowData[colKey] || '',
+            CAUSA_1: val.causa1 || '',
+            CAUSA_2: val.causa2 || '',
+            CAUSA_3: val.causa3 || '',
+            AÇÃO_REALIZADA: val.solucao || '',
+            RESPONSÁVEL: val.responsavel || ''
+          });
+        }
+      } catch (err) {
+        // Mantive o catch só pra evitar erros parando o script, sem log
+      }
+    }
+  }
+
+  if (exportData.length === 0) {
+    alert("Nenhuma causa preenchida encontrada.");
+    return;
+  }
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Causas');
+  XLSX.writeFile(workbook, 'Causas_Com_Disponibilidade.xlsx');
+});
+
+
+
+// Limpa os "▼" dos cabeçalhos (faz isso logo depois de capturar headCols)
+headCols = headCols.map(c => c.replace(/\s*▼$/, '').trim());
+
+// Índice da coluna SITE (ajuste para refletir a posição correta)
+const siteIdx = headCols.findIndex(c => c === 'SITE');
+
+// Define o índice da coluna de criticidade correta
+const crit2Idx = headCols.findIndex(c => c.startsWith('Criticidade') && c.includes(currentMonths.at(-1)));
+
+// Define o regex dos sites do bairro
+const bairroRegex = dadosSitesBairro.map(s => `^${s.Site}$`).join('|');
+
+// Função para filtrar com base nos cards
+function cardFilter(id, crit, showAll = false) {
+  $(id).off('click').on('click', () => {
+    table.search('').columns().search('').draw();
+
+    if (!showAll) {
+      table.column(siteIdx).search(bairroRegex, true, false);
+    }
+
+    if (crit !== null) {
+      table.column(crit2Idx).search(`^${crit}$`, true, false);
+    }
+
+    table.draw();
+  });
+}
 
   // 🔧 Agora esse aqui limpa tudo e mostra todos os sites
   cardFilter('#totalSitesCard', null, true);
@@ -721,9 +828,24 @@
   const id = btoa(`${rowData['SITE']}|${colKey}`);
   db.ref('dispmovel/' + id).once('value').then(snap => {
     const val = snap.val() || {};
-    $('#causaInput1').val(val.causa1 || '');
-    $('#causaInput2').val(val.causa2 || '');
-    $('#causaInput3').val(val.causa3 || '');
+
+    // Função para preencher select/outro corretamente
+    function setCausaSelect(num, value) {
+      const select = $(`#causaInput${num}`);
+      const outro = $(`#causaOutro${num}`);
+      const options = Array.from(select[0].options).map(opt => opt.value);
+      if (value && !options.includes(value)) {
+        select.val('Outro');
+        outro.val(value).show();
+      } else {
+        select.val(value || '');
+        outro.val('').hide();
+      }
+    }
+    setCausaSelect(1, val.causa1);
+    setCausaSelect(2, val.causa2);
+    setCausaSelect(3, val.causa3);
+
     $('#solucaoInput').val(val.solucao || '');
     $('#responsavelInput').val(val.responsavel || '');
     $('#editModal').css('display', 'flex');
@@ -738,10 +860,21 @@
       if (!currentEdit) return;
       const { rowData, colKey, cellElem } = currentEdit;
       const id = btoa(`${rowData['SITE']}|${colKey}`);
+
+      // Função para pegar valor correto da causa (select ou outro)
+      function getCausaValue(num) {
+        const select = $(`#causaInput${num}`);
+        const outro = $(`#causaOutro${num}`);
+        if (select.val() === 'Outro') {
+          return outro.val() || 'Outro';
+        }
+        return select.val();
+      }
+
       const data = {
-        causa1: $('#causaInput1').val(),
-        causa2: $('#causaInput2').val(),
-        causa3: $('#causaInput3').val(),
+        causa1: getCausaValue(1),
+        causa2: getCausaValue(2),
+        causa3: getCausaValue(3),
         solucao: $('#solucaoInput').val(),
         responsavel: $('#responsavelInput').val()
       };
