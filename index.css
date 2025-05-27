@@ -3,9 +3,8 @@ body {
   background: #f5f7fa;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
   color: #232a36;
-  margin: 0 !important;
-  padding: 0 !important;
   zoom: 35%;
+  margin-left: 30px;
 }
 
 
@@ -26,6 +25,8 @@ body {
   position: relative;
   background: linear-gradient(120deg, #4f5bd5 0%, #5f2c82 100%);
   height: 180px;
+  display: flex;
+  width: 99%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,12 +124,12 @@ body {
   background: #fff;
   border-radius: 0;
   box-shadow: none;
-  padding: 18px 18px 10px 18px;
+  padding: 0px 0px 0px 0px;
   margin-top: 0;
   margin-left: 0;
   margin-right: 0;
-  width: 100%;
-  max-width: 100%;
+  width: 99%;
+  max-width: 99%;
   padding-left: 0;
   padding-right: 0;
   z-index: 2;
@@ -136,17 +137,17 @@ body {
 }
 .search-card .form-control {
   border-radius: 8px;
-  border: 1px solid #e5e9f2;
+  border: none;
   font-size: 1.15rem;
   font-weight: 600;
-  color: #232a36;
-  background: #f8fafc;
+  color: none;
+  background: none;
   transition: border 0.2s;
 }
 .search-card .form-control:focus {
-  border: 1.5px solid #4f5bd5;
-  background: #fff;
-  box-shadow: 0 0 0 2px #4f5bd520;
+  border: none;
+  background: none;
+  box-shadow: none;
 }
 .search-card .btn {
   border-radius: 8px;
@@ -192,24 +193,25 @@ body {
 
 /* Table Container */
 .table-container {
+  justify-content: center;
   background: #fff;
   border-radius: 0;
   box-shadow: none;
-  padding: 24px 12px 12px 12px;
   margin-top: 0;
   margin-left: 0;
   margin-right: 0;
-  width: 100%;
-  max-width: 100%;
+  width: 98%;
+  max-width: 98%;
   padding-left: 0;
   padding-right: 0;
   overflow-x: auto;
+  zoom: 90%;
 }
 
 /* DataTable Styles */
 table.dataTable {
   border-collapse: separate;
-  border-spacing: 0 0.3em;
+  border-spacing: 0 0em;
   width: 100%;
 }
 table.dataTable thead {
@@ -220,7 +222,7 @@ table.dataTable thead th {
   color: #232a36;
   border: none;
   padding: 14px 10px;
-  font-size: 1.15rem;
+  font-size: 1.8rem;
   font-weight: 700;
   white-space: nowrap;
   text-align: center;
@@ -244,8 +246,8 @@ table.dataTable tbody td {
   border: none;
   vertical-align: middle;
   text-align: center;
-  font-weight: 600;
-  font-size: 1.1rem;
+  font-weight: bold;
+  font-size: 1.8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -272,6 +274,19 @@ table.dataTable tbody td.bairro-column span {
   100% { transform: translateX(-100%); }
 }
 
+/* Ajustar largura do contêiner de filtros e botões de exportação */
+.dataTables_wrapper .dt-buttons {
+  width: 100%; /* Ajuste conforme necessário */
+  display: flex;
+  justify-content: space-between; /* Distribui os botões uniformemente */
+  margin-bottom: 10px; /* Espaçamento inferior */
+}
+
+.dataTables_wrapper .dataTables_filter {
+  width: auto; /* Ajuste a largura do campo de busca */
+  margin-left: auto; /* Alinha à direita */
+}
+
 /* DataTables custom filter/search */
 .dataTables_wrapper .dataTables_filter input {
   border-radius: 6px;
@@ -293,6 +308,25 @@ table.dataTable tbody td.bairro-column span {
 }
 .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
   background: #6c63ff !important;
+}
+
+
+table.dataTable tbody td.bairro-column {
+  white-space: normal; /* Permite a quebra de linha */
+  word-wrap: break-word; /* Quebra palavras longas, se necessário */
+  overflow: hidden; /* Garante que o conteúdo não ultrapasse a largura */
+  text-overflow: ellipsis; /* Adiciona reticências para texto muito longo */
+}
+
+
+.dataTables_wrapper .dataTables_length label {
+  font-size: 25px; /* Aumenta o tamanho do texto */
+  font-weight: 600; /* Torna o texto mais destacado */
+}
+.dataTables_wrapper .dataTables_length select {
+  font-size: 25px; /* Aumenta o tamanho do dropdown */
+  font-weight: 600; /* Torna o texto mais destacado */
+  padding: 5px; /* Ajusta o espaçamento interno */
 }
 
 /* Modal Styles */
@@ -439,25 +473,24 @@ table.dataTable tbody td.bairro-column span {
 }
 
 /* Responsividade */
-@media (max-width: 900px) {
+@media (max-width: 1300px) {
   .dashboard { flex-direction: column; gap: 12px; }
   .dashboard-card { min-width: 120px; font-size: 1rem; padding: 18px 6px 12px 6px; }
   .modal-container { padding: 18px 8px 12px 8px; }
 }
-@media (max-width: 600px) {
+@media (max-width: 800px) {
   .hero-content h1 { font-size: 1.2rem; }
   .dashboard-card .card-number { font-size: 1.3rem; }
   .modal-container { max-width: 98vw; }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1800px) {
   .container,
   .dashboard,
   .search-card,
   .table-container {
     max-width: 100% !important;
-    width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+    width: 98%; /* Ajuste a largura conforme necessário */
+    margin: 0 auto !important; /* Centraliza horizontalmente */
     padding-left: 0 !important;
     padding-right: 0 !important;
     border-radius: 0 !important;
@@ -493,4 +526,8 @@ table.dataTable tbody td.bairro-column span {
   font-size: 25px;
 }
 
+.filter-btn.filtered {
+  color: #007bff !important; /* Azul bootstrap */
+  font-weight: bold;
+}
 
