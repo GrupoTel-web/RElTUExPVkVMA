@@ -23,10 +23,6 @@
 
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-custom bg-light">
-    <div class="container"></div>
-  </nav>
-
   <section class="hero-vivo">
     <div class="hero-overlay"></div>
     <div class="hero-content text-center my-4">
@@ -34,7 +30,7 @@
     </div>
   </section>
 
-  <div class="container">
+  <div class="container" style="margin-left: 50px; margin-right: -15px;">
     <div class="dashboard d-flex justify-content-between mb-4">
       <div class="dashboard-card total bg-primary text-white p-3 rounded" id="totalSitesCard">Total de Sites: 0</div>
       <div class="dashboard-card bg-secondary text-white p-3 rounded" id="sitesBairroCard">Total Sites Bairro: 0</div>
@@ -43,19 +39,16 @@
       <div class="dashboard-card green bg-success text-white p-3 rounded" id="nonCriticalSitesCard">Sites Não Críticos: 0</div>
     </div>
 
-    <div class="search-card p-3 bg-white rounded shadow-sm position-relative">
+    <div class="search-card p-3 bg-none position-relative">
       <div class="row g-2">
-        <div class="col-md-3 position-relative">
-          <input type="text" id="dddFilterInput" placeholder="Filtrar por DDD" class="form-control input-large-bold" style="font-size:25px;font-weight:700;">
-          <div id="dddDropdown" class="dropdown-list"></div>
+        <div class="col-md-3 position-relative" style="border: none;">
+          <input type="text" id="dddFilterInput" placeholder="" class="form-control input-large-bold" style="font-size:25px;font-weight:700;" readonly>
         </div>
         <div class="col-md-3 position-relative">
-          <input type="text" id="muniFilterInput" placeholder="Filtrar por Município" class="form-control" style="font-size:25px;font-weight:700;">
-          <div id="muniDropdown" class="dropdown-list"></div>
+          <input type="text" id="muniFilterInput" placeholder="" class="form-control" style="font-size:25px;font-weight:700;" readonly>
         </div>
         <div class="col-md-3 position-relative">
-          <input type="text" id="siteFilterInput" placeholder="Filtrar por Site" class="form-control" style="font-size:25px;font-weight:700;">
-          <div id="siteDropdown" class="dropdown-list"></div>
+          <input type="text" id="siteFilterInput" placeholder="" class="form-control" style="font-size:25px;font-weight:700;" readonly>
         </div>
         <div class="col-md-1">
           <button id="clearFilters" class="btn btn-secondary w-100" style="font-size:25px;font-weight:450;">Limpar</button>
@@ -68,6 +61,7 @@
         </div>
       </div>
     </div>
+
 
     <div class="table-container bg-white rounded shadow-sm p-3 overflow-auto mt-3">
       <table id="oltTable" class="table table-striped table-bordered nowrap" style="width:100%">
@@ -88,7 +82,7 @@
 <!-- CAUSA 1 -->
 <div class="mb-2">
   <label class="form-label">⚠️ Causa 1</label>
-  <select class="form-select" id="causaInput1" disabled required>
+  <select class="form-select" id="causaInput1">
     <option value="" disabled selected>Selecione uma causa</option>
     <option value="Rede Externa">Rede Externa</option>
     <option value="Vandalismo">Vandalismo</option>
@@ -107,7 +101,7 @@
 <!-- CAUSA 2 -->
 <div class="mb-2">
   <label class="form-label">⚠️ Causa 2</label>
-  <select class="form-select" id="causaInput2" disabled required>
+  <select class="form-select" id="causaInput2">
     <option value="" disabled selected>Selecione uma causa</option>
     <option value="Rede Externa">Rede Externa</option>
     <option value="Vandalismo">Vandalismo</option>
@@ -126,7 +120,7 @@
 <!-- CAUSA 3 -->
 <div class="mb-2">
   <label class="form-label">⚠️ Causa 3</label>
-  <select class="form-select" id="causaInput3" disabled required>
+  <select class="form-select" id="causaInput3">
     <option value="" disabled selected>Selecione uma causa</option>
     <option value="Rede Externa">Rede Externa</option>
     <option value="Vandalismo">Vandalismo</option>
@@ -145,11 +139,11 @@
 
       <div class="mb-2">
         <label class="form-label">✅ Ação Realizada</label>
-        <input type="text" class="form-control" id="solucaoInput" required disabled>
+        <input type="text" class="form-control" id="solucaoInput">
       </div>
       <div class="mb-2">
         <label class="form-label">🧑‍💼 Responsável</label>
-        <input type="text" class="form-control" id="responsavelInput" readonly>
+        <input type="text" class="form-control" id="responsavelInput">
       </div>
       <!-- Novo botão Editar para destravar os campos -->
       <button type="button" id="editBtn" class="btn btn-secondary w-100 mt-2">Editar</button>
@@ -212,12 +206,22 @@
       if (value == null || value === '') return '<td></td>';
       const n = parseFloat(value.toString().replace(',', '.'));
       let bg = '';
-      if (n === 100) bg = '#2c681992'; // Verde escuro (Ótimo)
-      else if (n > 98) bg = '#61ca427c'; // Verde claro (Bom)
-      else if (n > 96) bg = '#f2d3387d'; // Laranja (Alerta)
-      else bg = '#f238387d'; // Vermelho (Crítico)
+      let color = ''; // Cor da fonte
+      if (n === 100) {
+          bg = '#337031'; // Verde escuro (Ótimo)
+          color = '#fff'; // Branco
+      } else if (n > 98) {
+          bg = '#00b050'; // Verde claro (Bom)
+          color = '#fff'; // Branco
+      } else if (n > 96) {
+          bg = '#ffff00'; // Laranja (Alerta)
+          color = '#000'; // Preto
+      } else {
+          bg = '#ff0000'; // Vermelho (Crítico)
+          color = '#fff'; // Branco
+      }
       const disp = (n === 100 || n === 0) ? String(n) : n.toFixed(2).replace('.', ',');
-      return `<td style="background-color:${bg}" data-order="${n}">${disp}</td>`;
+      return `<td style="background-color:${bg}; color:${color}" data-order="${n}">${disp}</td>`;
     }
 
     function getDynamicMonthHeaders(data) {
@@ -264,9 +268,8 @@ return keys.map(m => {
   const critical2 = getCrit(recentVals.slice(1));    // do segundo ao quarto
 
   const avg = recentVals.length ? (recentVals.reduce((sum, v) => sum + v, 0) / recentVals.length).toFixed(2).replace('.', ',') : '0';
-  const stim = recentVals.length ? ((recentVals.reduce((sum, v) => sum + v, 0) + (31 - recentVals.length) * 100) / 31).toFixed(2).replace('.', ',') : '0';
 
-  return { critical1, critical2, projMedia: avg, projEstimulada: stim };
+  return { critical1, critical2, projMedia: avg };
 }
 
 
@@ -277,7 +280,7 @@ return keys.map(m => {
     function initializeTable() {
       const today = new Date();
       const dateHeaders = [];
-      for (let i = 8; i >= 1; i--) {
+      for (let i = 7; i >= 1; i--) {
         const d = new Date(today); d.setDate(d.getDate()-i);
         const dd = String(d.getDate()).padStart(2,'0');
         const mm = String(d.getMonth()+1).padStart(2,'0');
@@ -291,8 +294,7 @@ return keys.map(m => {
         return { ...item,
           [`Criticidade ${lastMonths[0].display}`]: cols.critical1,
           [`Criticidade ${lastMonths[1].display}`]: cols.critical2,
-          'Proj. Média': cols.projMedia,
-          'Proj. Estimulada 100%': cols.projEstimulada
+          'Proj. Média': cols.projMedia
         };
       });
 
@@ -307,7 +309,7 @@ return keys.map(m => {
         ...monthHeaders.map(m=>m.display),
         ...dateHeaders.map(h=>h.display),
         `Criticidade ${lastMonths[0].display}`,
-        `Criticidade ${lastMonths[1].display}`,'Proj. Média','Proj. Estimulada 100%'
+        `Criticidade ${lastMonths[1].display}`,'Proj. Média'
       ];
       const theadHtml = `
         <tr>
@@ -326,38 +328,69 @@ return keys.map(m => {
       $('#oltTable thead').html(theadHtml);
 
       let html='';
-      dadosDisponibilidade.forEach((it, rowIdx)=>{
-        html+='<tr>';
-        // DDD
-        html += `<td>${it['DDD']||''}</td>`;
-        // MUNICIPIO
-        html += `<td>${it['MUNICIPIO']||''}</td>`;
-        // Novas colunas do sites.json (lookup corrigido)
-        let siteKey = String(it['SITE'] || '').trim().toUpperCase();
-        const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
-        html += `<td>${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
-        html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
-        html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
-        // SITE
-        html += `<td>${it['SITE']||''}</td>`;
-        // Meses dinâmicos
-        monthHeaders.forEach((m, colIdx)=>{
-          const val = it[m.key];
-          const n = val == null || val === '' ? null : parseFloat(val.toString().replace(',', '.'));
-          let bg = '';
-          if (n === 100) bg = '#2c681992';
-          else if (n > 98) bg = '#61ca427c';
-          else if (n > 96) bg = '#f2d3387d';
-          else if (n != null) bg = '#f238387d';
-          const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
-          html += `<td class="month-cell" style="background-color:${bg}; cursor:pointer;" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE']||''}">${disp}</td>`;
-        });
-        dateHeaders.forEach(h=> html+=formatCell(it[h.key]));
-        html+=`<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
-        html+=`<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
-        html+=`<td>${it['Proj. Média']}</td><td>${it['Proj. Estimulada 100%']}</td>`;
-        html+='</tr>';
-      });
+      dadosDisponibilidade.forEach((it, rowIdx) => {
+  html += '<tr>';
+  // DDD
+  html += `<td>${it['DDD'] || ''}</td>`;
+  // MUNICIPIO
+  html += `<td>${it['MUNICIPIO'] || ''}</td>`;
+  // Novas colunas do sites.json (lookup corrigido)
+  let siteKey = String(it['SITE'] || '').trim().toUpperCase();
+  const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
+  html += `<td class="bairro-column">${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
+  html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
+  html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
+  // SITE
+  html += `<td>${it['SITE'] || ''}</td>`;
+  // Meses dinâmicos
+  monthHeaders.forEach((m, colIdx) => {
+    const val = it[m.key];
+    const n = val == null || val === '' ? null : parseFloat(val.toString().replace(',', '.'));
+    let bg = '';
+    let color = ''; // Cor da fonte
+    if (n === 100) {
+      bg = '#337031'; // Verde escuro (Ótimo)
+      color = '#ffffff'; // Branco
+    } else if (n > 98) {
+      bg = '#00b050'; // Verde claro (Bom)
+      color = '#ffffff'; // Branco
+    } else if (n > 96) {
+      bg = '#ffff00'; // Laranja (Alerta)
+      color = '#000000'; // Preto
+    } else if (n != null) {
+      bg = '#ff0000'; // Vermelho (Crítico)
+      color = '#ffffff'; // Branco
+    }
+    const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
+    html += `<td class="month-cell" style="background-color:${bg}; color:${color}; cursor:pointer;" data-order="${n}" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE'] || ''}">${disp}</td>`;
+  });
+  dateHeaders.forEach(h => html += formatCell(it[h.key]));
+  html += `<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
+  html += `<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
+
+  // Formatação da coluna "Proj. Média"
+  const projMedia = it['Proj. Média'];
+  const projValue = projMedia == null || projMedia === '' ? null : parseFloat(projMedia.toString().replace(',', '.'));
+  let projBg = '';
+  let projColor = ''; // Cor da fonte
+  if (projValue === 100) {
+    projBg = '#337031'; // Verde escuro (Ótimo)
+    projColor = '#ffffff'; // Branco
+  } else if (projValue > 98) {
+    projBg = '#00b050'; // Verde claro (Bom)
+    projColor = '#ffffff'; // Branco
+  } else if (projValue > 96) {
+    projBg = '#ffff00'; // Laranja (Alerta)
+    projColor = '#000000'; // Preto
+  } else if (projValue != null) {
+    projBg = '#ff0000'; // Vermelho (Crítico)
+    projColor = '#ffffff'; // Branco
+  }
+  const projDisplay = projValue != null ? projValue.toFixed(2).replace('.', ',') : '';
+  html += `<td style="background-color:${projBg}; color:${projColor};">${projDisplay}</td>`;
+
+  html += '</tr>';
+});
       $('#oltTable tbody').html(html);
 
       // Atualização: Inicialização do DataTable com filtros avançados
@@ -365,8 +398,8 @@ return keys.map(m => {
   paging:true,
   pageLength:20,
   ordering:true,
-  order:[[0,'asc']], 
-  scrollX:true,
+  order:[[5,'asc']], 
+  scrollX:false,
   language:{
     paginate:{previous:'Anterior',next:'Próximo'},
     info:'Mostrando _START_ a _END_ de _TOTAL_',
@@ -379,6 +412,9 @@ return keys.map(m => {
   ]
 });
 
+table.on('draw', function () {
+  updateCardsComFiltros();
+});
 
       $('.filter-btn').on('click', function (e) {
   e.stopPropagation();
@@ -425,14 +461,14 @@ return keys.map(m => {
 
   // Filtro por cor (apenas para colunas de disponibilidade)
   let colorFilter = null;
-  if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}/i.test(headCols[index])) {
+  if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(headCols[index])) {
     colorFilter = $(`
       <div class="mb-2" style="font-size:15px;">
         <span style="margin-right:8px;">Cor:</span>
-        <span class="color-dot" data-color="darkgreen" style="background:#2c681992;" title="Ótimo"></span>
-        <span class="color-dot" data-color="lightgreen" style="background:#61ca427c;" title="Bom"></span>
-        <span class="color-dot" data-color="orange" style="background:#f2d3387d;" title="Alerta"></span>
-        <span class="color-dot" data-color="red" style="background:#f238387d;" title="Crítico"></span>
+        <span class="color-dot" data-color="darkgreen" style="background:#337031;" title="Ótimo"></span>
+        <span class="color-dot" data-color="lightgreen" style="background:#00b050;" title="Bom"></span>
+        <span class="color-dot" data-color="orange" style="background:#ffff00;" title="Alerta"></span>
+        <span class="color-dot" data-color="red" style="background:#ff0000;" title="Crítico"></span>
         <span class="color-dot" data-color="all" style="background:#ccc;border:1px solid #888;" title="Todas"></span>
       </div>
     `);
@@ -441,12 +477,26 @@ return keys.map(m => {
   // Opções de valores únicos (checkboxes)
   let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
   const values = new Set();
-  table.column(index).data().each(function (val) {
-    if (val) values.add(val.trim());
-  });
-  [...values].sort().forEach(v => {
-    filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
-  });
+  table.rows({ search: 'applied' }).data().each(function (row) {
+  // row pode ser um array de HTML, então pegue a coluna correta
+  let val = row[index];
+  
+  // Verifique se val é um objeto com a propriedade "display"
+  if (typeof val === 'object' && val !== null && val.display) {
+    val = val.display; // Extraia apenas o valor da propriedade "display"
+  } else if (typeof val === 'string') {
+    // Se for HTML, extraia o texto
+    val = $('<div>').html(val).text().trim();
+  } else if (val && val.textContent) {
+    val = val.textContent.trim();
+  }
+
+  if (val) values.add(val);
+});
+
+[...values].sort().forEach(v => {
+  filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
+});
 
   // Ordenação
   let sortBtns = $(`
@@ -486,7 +536,7 @@ return keys.map(m => {
     boxShadow: '0 4px 18px rgba(0,0,0,0.13)',
     padding: '18px 18px 12px 18px',
     display: 'block',
-    zoom: '140%'
+    zoom: '190%'
   }).data('column', index);
 
   // Fechar popup
@@ -528,7 +578,7 @@ return keys.map(m => {
   });
   sortBtns.find('.sort-clear').on('click', function () {
     console.log("Sort Clear Clicked"); // Debugging
-    table.order([]).draw();
+        table.order([5, 'asc']).draw();
   });
 
   // Aplicar filtro
@@ -558,6 +608,7 @@ return keys.map(m => {
       }
     }
     table.column(index).search(regex, true, false).draw();
+    $(`.filter-btn[data-column="${index}"]`).addClass('filtered');
     popup.hide();
   });
 
@@ -568,6 +619,9 @@ return keys.map(m => {
     popup.find('.filter-empty, .filter-notempty').prop('checked', false);
     if (colorFilter) colorFilter.find('.color-dot').removeClass('selected');
     popup.hide();
+
+$(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
+
   });
 });
 
@@ -624,6 +678,28 @@ return keys.map(m => {
   $('#nonCriticalSitesCard').text(`Sites Não Críticos: ${nonc}`);
 }
 
+
+function updateCardsComFiltros() {
+  if (!table || !dadosSitesBairro) return;
+
+  const filteredRows = table.rows({ search: 'applied' }).data().toArray();
+
+  const siteIndex = headCols.findIndex(c => c === 'SITE');
+  const siteBairroSet = new Set(dadosSitesBairro.map(s => s.Site));
+
+  let total = filteredRows.length;
+  let totalBairro = 0;
+
+  filteredRows.forEach(row => {
+    const site = $('<div>').html(row[siteIndex]).text().trim();
+    if (siteBairroSet.has(site)) totalBairro++;
+  });
+
+  $('#totalSitesCard').text(`Total de Sites: ${total}`);
+  $('#sitesBairroCard').text(`Total Sites Bairro: ${totalBairro}`);
+}
+
+
   
 
     function setupFilters() {
@@ -670,12 +746,188 @@ return keys.map(m => {
       setup('#siteFilterInput','#siteDropdown',2);
     }
 
-    function setupActions() {
-  $('#clearFilters').on('click', () => {
-    table.search('').columns().search('').draw();
-    $('.filter-checkbox, .select-all-checkbox').prop('checked', false);
-    $('.dropdown-list').removeClass('active');
+    
+
+    function setupAdvancedFilters() {
+  $('.filter-btn').off('click').on('click', function (e) {
+    e.stopPropagation();
+    $('.filter-popup, #filterContainer').hide();
+
+    const index = $(this).data('column');
+    let popup = $('#filterContainer');
+    popup.empty();
+
+    let header = $(
+      `<div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-weight:bold;font-size:18px;">Filtro Avançado</span>
+        <button class="close-popup"
+                style="width:32px;height:32px;border-radius:50%;background-color:#dee2e6;border:none;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">
+          &times;
+        </button>
+      </div>
+      <hr style="margin:8px 0;">`
+    );
+
+    let searchInput = $('<input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar valor...">');
+
+    let emptyFilter = $(
+      `<div class="mb-2" style="font-size:15px;">
+        <label><input type="checkbox" class="filter-empty"> Somente vazios</label>
+        <label style="margin-left:10px;"><input type="checkbox" class="filter-notempty"> Somente preenchidos</label>
+      </div>`
+    );
+
+    let colorFilter = null;
+    if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(headCols[index])) {
+      colorFilter = $(
+        `<div class="mb-2" style="font-size:15px;">
+          <span style="margin-right:8px;">Cor:</span>
+          <span class="color-dot" data-color="darkgreen" style="background:#337031;" title="Ótimo"></span>
+          <span class="color-dot" data-color="lightgreen" style="background:#00b050;" title="Bom"></span>
+          <span class="color-dot" data-color="orange" style="background:#ffff00;" title="Alerta"></span>
+          <span class="color-dot" data-color="red" style="background:#ff0000;" title="Crítico"></span>
+          <span class="color-dot" data-color="all" style="background:#ccc;border:1px solid #888;" title="Todas"></span>
+        </div>`
+      );
+    }
+
+    let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
+    const values = new Set();
+
+    table.column(index).data().each(function (val) {
+      const texto = $('<div>').html(val).text().trim();
+      if (texto) values.add(texto);
+    });
+
+    [...values].sort().forEach(v => {
+      filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
+    });
+
+    let sortBtns = $(
+      `<div class="filter-sort mb-2" style="font-size:15px;">
+        <span style="margin-right:8px;">Ordenar:</span>
+        <button class="btn btn-sm btn-outline-primary sort-asc">A-Z/↑</button>
+        <button class="btn btn-sm btn-outline-primary sort-desc">Z-A/↓</button>
+        <button class="btn btn-sm btn-outline-secondary sort-clear">Limpar</button>
+      </div>`
+    );
+
+    let applyButton = $('<button class="apply-filter btn btn-success w-100 mt-2">Aplicar Filtro</button>');
+    let clearButton = $('<button class="clear-filter btn btn-secondary w-100 mt-1">Limpar Filtros</button>');
+
+    popup.append(header, searchInput, emptyFilter);
+    if (colorFilter) popup.append(colorFilter);
+    popup.append(filterOptions, sortBtns, applyButton, clearButton);
+
+    popup.css({
+      position: 'absolute',
+      zIndex: 9999,
+      top: e.pageY + 10,
+      left: e.pageX + 190,
+      minWidth: '260px',
+      maxWidth: '350px',
+      background: '#fff',
+      border: '1px solid #bbb',
+      borderRadius: '10px',
+      boxShadow: '0 4px 18px rgba(0,0,0,0.13)',
+      padding: '18px 18px 12px 18px',
+      display: 'block',
+      zoom: '190%'
+    }).data('column', index);
+
+    popup.find('.close-popup').on('click', () => popup.hide());
+
+    searchInput.on('keyup', function () {
+      let val = $(this).val().toLowerCase();
+      filterOptions.find('div').each(function () {
+        $(this).toggle($(this).text().toLowerCase().includes(val));
+      });
+    });
+
+    popup.find('.filter-empty').on('change', function () {
+      if (this.checked) popup.find('.filter-notempty').prop('checked', false);
+    });
+    popup.find('.filter-notempty').on('change', function () {
+      if (this.checked) popup.find('.filter-empty').prop('checked', false);
+    });
+
+    if (colorFilter) {
+      colorFilter.find('.color-dot').on('click', function () {
+        colorFilter.find('.color-dot').removeClass('selected');
+        $(this).addClass('selected');
+      });
+    }
+
+    sortBtns.find('.sort-asc').on('click', () => table.order([index, 'asc']).draw());
+    sortBtns.find('.sort-desc').on('click', () => table.order([index, 'desc']).draw());
+    sortBtns.find('.sort-clear').on('click', () => table.order([]).draw());
+
+    applyButton.on('click', function () {
+      let regex = '';
+      if (popup.find('.filter-empty').prop('checked')) {
+        regex = '^\\s*$';
+      } else if (popup.find('.filter-notempty').prop('checked')) {
+        regex = '^\\s*\\S+';
+      } else {
+        const vals = filterOptions.find('input[type="checkbox"]:checked').map(function () {
+          return '^' + $.fn.dataTable.util.escapeRegex($(this).val()) + '$';
+        }).get();
+        regex = vals.join('|');
+      }
+
+      if (colorFilter) {
+        const selectedColor = colorFilter.find('.color-dot.selected').data('color');
+        if (selectedColor && selectedColor !== 'all') {
+          const colorRegex = {
+            darkgreen: '^100$',
+            lightgreen: '(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)',
+            orange: '(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)',
+            red: '(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)'
+          }[selectedColor];
+          regex = regex ? `(?=.*${regex})${colorRegex}` : colorRegex;
+        }
+      }
+
+      table.column(index).search(regex, true, false).draw();
+      popup.hide();
+    });
+
+    clearButton.on('click', function () {
+      table.column(index).search('').draw();
+      filterOptions.find('input[type="checkbox"]').prop('checked', false);
+      popup.find('.filter-empty, .filter-notempty').prop('checked', false);
+      if (colorFilter) colorFilter.find('.color-dot').removeClass('selected');
+      popup.hide();
+    });
   });
+
+  // Fecha popup ao clicar fora
+  $(document).off('click.filtroFechamento').on('click.filtroFechamento', function (e) {
+    const $target = $(e.target);
+    if (
+      !$target.closest('.filter-btn').length &&
+      !$target.closest('#filterContainer').length
+    ) {
+      $('#filterContainer').hide();
+    }
+  });
+}
+
+
+
+function setupActions() {
+  $('#clearFilters').on('click', () => {
+  // Limpa busca global e por colunas
+  table.search('').columns().search('').draw();
+
+  // Reseta a ordenação para a ordem padrão
+      table.order([5, 'asc']).draw();
+
+  $('.filter-btn').removeClass('filtered');
+  $('.filter-checkbox, .select-all-checkbox').prop('checked', false);
+  $('.dropdown-list').removeClass('active');
+});
+
 
   $('#exportExcel').on('click', () => {
     const data = table.rows({ search: 'applied' }).nodes().toArray()
@@ -805,13 +1057,13 @@ function cardFilter(id, crit, showAll = false) {
   let disponibilidadeColor = '';
   const n = parseFloat(disponibilidade.toString().replace(',', '.'));
   if (n === 100) {
-    disponibilidadeColor = '#2c681992'; // Verde escuro
+    disponibilidadeColor = '#337031'; // Verde escuro
   } else if (n > 98) {
-    disponibilidadeColor = '#61ca427c'; // Verde claro
+    disponibilidadeColor = '#00b050'; // Verde claro
   } else if (n > 96) {
-    disponibilidadeColor = '#f2d3387d'; // Laranja
+    disponibilidadeColor = '#ffff00'; // Laranja
   } else {
-    disponibilidadeColor = '#f238387d'; // Vermelho
+    disponibilidadeColor = '#ff0000'; // Vermelho
   }
 
   // Atualiza o título do modal com a formatação de cor no texto
@@ -915,7 +1167,7 @@ function cardFilter(id, crit, showAll = false) {
     });
 
     document.getElementById('editBtn').addEventListener('click', () => {
-      causas.forEach(num => {
+     causas.forEach(num => {
         document.getElementById(`causaInput${num}`).disabled = false;
         document.getElementById(`causaOutro${num}`).disabled = false;
       });
