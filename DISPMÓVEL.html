@@ -267,9 +267,7 @@ return keys.map(m => {
   const critical1 = getCrit(recentVals.slice(0, 3)); // últimos 3
   const critical2 = getCrit(recentVals.slice(1));    // do segundo ao quarto
 
-  const avg = recentVals.length ? (recentVals.reduce((sum, v) => sum + v, 0) / recentVals.length).toFixed(2).replace('.', ',') : '0';
-
-  return { critical1, critical2, projMedia: avg };
+  return { critical1, critical2 };
 }
 
 
@@ -291,10 +289,13 @@ return keys.map(m => {
 
       dadosDisponibilidade = dadosDisponibilidade.map(item => {
         const cols = calculateColumns(item, monthHeaders);
+        // Ajuste: se PROJECAO_MEDIA for vazio ou 0, use 100
+        let projMedia = item['PROJECAO_MEDIA'];
+        if (projMedia === '' || projMedia === 0 || projMedia === '0') projMedia = '100';
         return { ...item,
           [`Criticidade ${lastMonths[0].display}`]: cols.critical1,
           [`Criticidade ${lastMonths[1].display}`]: cols.critical2,
-          'Proj. Média': cols.projMedia
+          'Proj. Média': projMedia
         };
       });
 
@@ -370,28 +371,35 @@ return keys.map(m => {
 
   // Formatação da coluna "Proj. Média"
   const projMedia = it['Proj. Média'];
-  const projValue = projMedia == null || projMedia === '' ? null : parseFloat(projMedia.toString().replace(',', '.'));
+  // Ajuste: se projMedia for vazio ou 0, exibe 100
+  let projValue = projMedia == null || projMedia === '' || projMedia === 0 || projMedia === '0' ? 100 : parseFloat(projMedia.toString().replace(',', '.'));
   let projBg = '';
-  let projColor = ''; // Cor da fonte
+  let projColor = '';
+  // Correção da classificação (maior para menor):
   if (projValue === 100) {
     projBg = '#337031'; // Verde escuro (Ótimo)
-    projColor = '#ffffff'; // Branco
-  } else if (projValue > 98) {
+    projColor = '#ffffff';
+  } else if (projValue >= 98 && projValue < 100) {
     projBg = '#00b050'; // Verde claro (Bom)
-    projColor = '#ffffff'; // Branco
-  } else if (projValue > 96) {
-    projBg = '#ffff00'; // Laranja (Alerta)
-    projColor = '#000000'; // Preto
-  } else if (projValue != null) {
+    projColor = '#ffffff';
+  } else if (projValue >= 96 && projValue < 98) {
+    projBg = '#ffff00'; // Amarelo (Alerta)
+    projColor = '#000000';
+  } else if (projValue < 96) {
     projBg = '#ff0000'; // Vermelho (Crítico)
-    projColor = '#ffffff'; // Branco
+    projColor = '#ffffff';
   }
-  const projDisplay = projValue != null ? projValue.toFixed(2).replace('.', ',') : '';
-  html += `<td style="background-color:${projBg}; color:${projColor};">${projDisplay}</td>`;
+  let projDisplay = projValue === 100 ? '100' : (projMedia != null && projMedia !== '' ? projMedia : '');
+  projDisplay = projDisplay.toString().replace('.', ',');
+  // Adiciona classe e data-order para ordenação correta
+  html += `<td class="proj-media-cell" style="background-color:${projBg}; color:${projColor};" data-order="${projValue}">${projDisplay}</td>`;
 
   html += '</tr>';
 });
       $('#oltTable tbody').html(html);
+
+      // Após renderizar a tabela, verifica e adiciona o indicador de causa preenchida
+      addCausaIndicators();
 
       // Atualização: Inicialização do DataTable com filtros avançados
       table = $('#oltTable').DataTable({
@@ -408,6 +416,12 @@ return keys.map(m => {
     search:''
   },
   columnDefs: [
+    // Defina o tipo de ordenação da coluna "Proj. Média" como numérica
+    {
+      targets: headCols.length - 1, // Última coluna é "Proj. Média"
+      type: 'num',
+      orderDataType: 'dom-data-order'
+    },
     { targets: '_all', orderable: false } // <- isso desativa clique nos THs
   ]
 });
@@ -645,6 +659,32 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
       });
     }
 
+    // Função para adicionar bolinha indicadora nas células de mês com causa preenchida
+    function addCausaIndicators() {
+      // Seleciona todas as células de mês
+      $('#oltTable td.month-cell').each(function () {
+        const $td = $(this);
+        const rowIdx = $td.data('row');
+        const colKey = $td.data('colkey');
+        const site = $td.data('site');
+        if (!site || !colKey) return;
+
+        // Gera o id do registro no Firebase
+        const id = btoa(`${site}|${colKey}`);
+
+        // Consulta o Firebase para saber se há causa preenchida
+        db.ref('dispmovel/' + id).once('value').then(snap => {
+          const val = snap.val();
+          if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
+            // Adiciona a bolinha no canto superior direito da célula
+            if ($td.find('.causa-indicator').length === 0) {
+              $td.css('position', 'relative');
+              $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#007bff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');            }
+          }
+        });
+      });
+    }
+
   function updateCards() {
       if (!dadosSitesBairro || !dadosDisponibilidade) {
         console.error('Dados indisponíveis para atualizar os cartões.');
@@ -675,7 +715,7 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
   $('#sitesBairroCard').text(`Total Sites Bairro: ${total}`);
   $('#criticalSitesCard').text(`Sites Críticos: ${crit}`);
   $('#alertSitesCard').text(`Sites em Alerta: ${alert}`);
-  $('#nonCriticalSitesCard').text(`Sites Não Críticos: ${nonc}`);
+   $('#nonCriticalSitesCard').text(`Sites Não Críticos: ${nonc}`);
 }
 
 
@@ -1167,7 +1207,7 @@ function cardFilter(id, crit, showAll = false) {
     });
 
     document.getElementById('editBtn').addEventListener('click', () => {
-     causas.forEach(num => {
+    causas.forEach(num => {
         document.getElementById(`causaInput${num}`).disabled = false;
         document.getElementById(`causaOutro${num}`).disabled = false;
       });
