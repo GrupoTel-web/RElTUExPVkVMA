@@ -5,14 +5,10 @@
   <link rel="icon" type="image/ico" href="rede.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Disponibilidade Móvel</title>
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- DataTables CSS -->
   <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
   <link rel="stylesheet" href="index.css">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- jQuery UI para dropdowns estilosos -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
@@ -23,11 +19,24 @@
 
 </head>
 <body>
-  <section class="hero-vivo">
+  <section class="hero-vivo" style="position: relative;">
     <div class="hero-overlay"></div>
     <div class="hero-content text-center my-4">
       <h1>Dashboard Disponibilidade - Móvel</h1>
     </div>
+  
+    <!-- Indicador de atualização -->
+    <div id="updateInfo" style="
+      position: absolute;
+      bottom: 10px;
+      right: 15px;
+      font-size: 1.7em;
+      color: #fff;
+      background-color: rgba(140, 0, 255, 0.5);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: bold;
+    "></div>
   </section>
 
   <div class="container" style="margin-left: 50px; margin-right: -15px;">
@@ -72,14 +81,14 @@
     </div>
   </div>
 
-<!-- Adicione o modal customizado para edição -->
+
 <div id="editModal" class="modal-overlay">
   <div class="modal-container">
     <button id="closeModalBtn" class="close-modal-btn">&times;</button>
     <h4 id="modalTitle" class="modal-title">Editar Informação</h4>
     <form id="editForm">
 
-<!-- CAUSA 1 -->
+
 <div class="mb-2">
   <label class="form-label">⚠️ Causa 1</label>
   <select class="form-select" id="causaInput1">
@@ -98,7 +107,7 @@
   <input type="text" class="form-control mt-2" id="causaOutro1" placeholder="Descreva a causa" style="display:none;" />
 </div><br>
 
-<!-- CAUSA 2 -->
+
 <div class="mb-2">
   <label class="form-label">⚠️ Causa 2</label>
   <select class="form-select" id="causaInput2">
@@ -117,7 +126,6 @@
   <input type="text" class="form-control mt-2" id="causaOutro2" placeholder="Descreva a causa" style="display:none;" />
 </div><br>
 
-<!-- CAUSA 3 -->
 <div class="mb-2">
   <label class="form-label">⚠️ Causa 3</label>
   <select class="form-select" id="causaInput3">
@@ -145,7 +153,6 @@
         <label class="form-label">🧑‍💼 Responsável</label>
         <input type="text" class="form-control" id="responsavelInput">
       </div>
-      <!-- Novo botão Editar para destravar os campos -->
       <button type="button" id="editBtn" class="btn btn-secondary w-100 mt-2">Editar</button>
       <button type="submit" class="btn btn-primary w-100 mt-2">Salvar</button>
     </form>
@@ -184,12 +191,10 @@
     let table;
     let headCols = [];
 
-    // Carrega dados
     Promise.all([
       fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json', 'dadosDisponibilidade', 3600).then(d => dadosDisponibilidade = d),
       fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/sites.json', 'dadosSitesBairro', 3600).then(d => dadosSitesBairro = d)
     ]).then(() => {
-      // Crie um mapa para lookup rápido dos dados extras do site (case-insensitive, sem espaços)
       window.siteExtraMap = {};
       dadosSitesBairro.forEach(site => {
         if (site.Site) {
@@ -206,19 +211,19 @@
       if (value == null || value === '') return '<td></td>';
       const n = parseFloat(value.toString().replace(',', '.'));
       let bg = '';
-      let color = ''; // Cor da fonte
+      let color = ''; 
       if (n === 100) {
-          bg = '#337031'; // Verde escuro (Ótimo)
-          color = '#fff'; // Branco
+          bg = '#337031'; 
+          color = '#fff'; 
       } else if (n > 98) {
-          bg = '#00b050'; // Verde claro (Bom)
-          color = '#fff'; // Branco
+          bg = '#00b050'; 
+          color = '#fff'; 
       } else if (n > 96) {
-          bg = '#ffff00'; // Laranja (Alerta)
-          color = '#000'; // Preto
+          bg = '#ffff00'; 
+          color = '#000'; 
       } else {
-          bg = '#ff0000'; // Vermelho (Crítico)
-          color = '#fff'; // Branco
+          bg = '#ff0000'; 
+          color = '#fff'; 
       }
       const disp = (n === 100 || n === 0) ? String(n) : n.toFixed(2).replace('.', ',');
       return `<td style="background-color:${bg}; color:${color}" data-order="${n}">${disp}</td>`;
@@ -253,7 +258,7 @@ return keys.map(m => {
     function calculateColumns(item, monthHeaders) {
   const pv = v => v == null || v === '' ? null : parseFloat(v.toString().replace(',', '.'));
 
-  const recentKeys = monthHeaders.slice(-4).map(h => h.key); // Pega os últimos 4 (em inglês, ex: ['Feb', 'Mar', 'Apr', 'May'])
+  const recentKeys = monthHeaders.slice(-4).map(h => h.key); 
   const recentVals = recentKeys.map(k => pv(item[k])).filter(v => v != null);
 
   const getCrit = trio => {
@@ -264,8 +269,8 @@ return keys.map(m => {
     return 'Não Crítico';
   };
 
-  const critical1 = getCrit(recentVals.slice(0, 3)); // últimos 3
-  const critical2 = getCrit(recentVals.slice(1));    // do segundo ao quarto
+  const critical1 = getCrit(recentVals.slice(0, 3)); 
+  const critical2 = getCrit(recentVals.slice(1));    
 
   return { critical1, critical2 };
 }
@@ -289,7 +294,6 @@ return keys.map(m => {
 
       dadosDisponibilidade = dadosDisponibilidade.map(item => {
         const cols = calculateColumns(item, monthHeaders);
-        // Ajuste: se PROJECAO_MEDIA for vazio ou 0, use 100
         let projMedia = item['PROJECAO_MEDIA'];
         if (projMedia === '' || projMedia === 0 || projMedia === '0') projMedia = '100';
         return { ...item,
@@ -299,7 +303,6 @@ return keys.map(m => {
         };
       });
 
-      // Adicione as novas colunas ao cabeçalho após MUNICIPIO
       headCols = [
         'DDD',
         'MUNICIPIO',
@@ -331,36 +334,31 @@ return keys.map(m => {
       let html='';
       dadosDisponibilidade.forEach((it, rowIdx) => {
   html += '<tr>';
-  // DDD
   html += `<td>${it['DDD'] || ''}</td>`;
-  // MUNICIPIO
   html += `<td>${it['MUNICIPIO'] || ''}</td>`;
-  // Novas colunas do sites.json (lookup corrigido)
   let siteKey = String(it['SITE'] || '').trim().toUpperCase();
   const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
   html += `<td class="bairro-column">${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
   html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
   html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
-  // SITE
   html += `<td>${it['SITE'] || ''}</td>`;
-  // Meses dinâmicos
   monthHeaders.forEach((m, colIdx) => {
     const val = it[m.key];
     const n = val == null || val === '' ? null : parseFloat(val.toString().replace(',', '.'));
     let bg = '';
-    let color = ''; // Cor da fonte
+    let color = '';
     if (n === 100) {
-      bg = '#337031'; // Verde escuro (Ótimo)
-      color = '#ffffff'; // Branco
+      bg = '#337031'; 
+      color = '#ffffff'; 
     } else if (n > 98) {
-      bg = '#00b050'; // Verde claro (Bom)
-      color = '#ffffff'; // Branco
+      bg = '#00b050';
+      color = '#ffffff'; 
     } else if (n > 96) {
-      bg = '#ffff00'; // Laranja (Alerta)
-      color = '#000000'; // Preto
+      bg = '#ffff00'; 
+      color = '#000000'; 
     } else if (n != null) {
-      bg = '#ff0000'; // Vermelho (Crítico)
-      color = '#ffffff'; // Branco
+      bg = '#ff0000'; 
+      color = '#ffffff'; 
     }
     const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
     html += `<td class="month-cell" style="background-color:${bg}; color:${color}; cursor:pointer;" data-order="${n}" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE'] || ''}">${disp}</td>`;
@@ -369,39 +367,33 @@ return keys.map(m => {
   html += `<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
   html += `<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
 
-  // Formatação da coluna "Proj. Média"
   const projMedia = it['Proj. Média'];
-  // Ajuste: se projMedia for vazio ou 0, exibe 100
   let projValue = projMedia == null || projMedia === '' || projMedia === 0 || projMedia === '0' ? 100 : parseFloat(projMedia.toString().replace(',', '.'));
   let projBg = '';
   let projColor = '';
-  // Correção da classificação (maior para menor):
   if (projValue === 100) {
-    projBg = '#337031'; // Verde escuro (Ótimo)
+    projBg = '#337031'; 
     projColor = '#ffffff';
   } else if (projValue >= 98 && projValue < 100) {
-    projBg = '#00b050'; // Verde claro (Bom)
+    projBg = '#00b050'; 
     projColor = '#ffffff';
   } else if (projValue >= 96 && projValue < 98) {
-    projBg = '#ffff00'; // Amarelo (Alerta)
+    projBg = '#ffff00'; 
     projColor = '#000000';
   } else if (projValue < 96) {
-    projBg = '#ff0000'; // Vermelho (Crítico)
+    projBg = '#ff0000'; 
     projColor = '#ffffff';
   }
   let projDisplay = projValue === 100 ? '100' : (projMedia != null && projMedia !== '' ? projMedia : '');
   projDisplay = projDisplay.toString().replace('.', ',');
-  // Adiciona classe e data-order para ordenação correta
   html += `<td class="proj-media-cell" style="background-color:${projBg}; color:${projColor};" data-order="${projValue}">${projDisplay}</td>`;
 
   html += '</tr>';
 });
       $('#oltTable tbody').html(html);
 
-      // Após renderizar a tabela, verifica e adiciona o indicador de causa preenchida
       addCausaIndicators();
 
-      // Atualização: Inicialização do DataTable com filtros avançados
       table = $('#oltTable').DataTable({
   paging:true,
   pageLength:20,
@@ -416,13 +408,12 @@ return keys.map(m => {
     search:''
   },
   columnDefs: [
-    // Defina o tipo de ordenação da coluna "Proj. Média" como numérica
     {
-      targets: headCols.length - 1, // Última coluna é "Proj. Média"
+      targets: headCols.length - 1, 
       type: 'num',
       orderDataType: 'dom-data-order'
     },
-    { targets: '_all', orderable: false } // <- isso desativa clique nos THs
+    { targets: '_all', orderable: false } 
   ]
 });
 
@@ -437,7 +428,6 @@ table.on('draw', function () {
   let popup = $('#filterContainer');
   popup.empty();
 
-  // Cabeçalho do popup
   let header = $(`
   <div style="display:flex;align-items:center;justify-content:space-between;">
     <span style="font-weight:bold;font-size:18px;">Filtro Avançado</span>
@@ -462,10 +452,8 @@ table.on('draw', function () {
   <hr style="margin:8px 0;">
 `);
 
-  // Busca
   let searchInput = $('<input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar valor...">');
 
-  // Filtro por valor vazio/não vazio
   let emptyFilter = $(`
     <div class="mb-2" style="font-size:15px;">
       <label><input type="checkbox" class="filter-empty" value="empty"> Somente vazios</label>
@@ -473,7 +461,6 @@ table.on('draw', function () {
     </div>
   `);
 
-  // Filtro por cor (apenas para colunas de disponibilidade)
   let colorFilter = null;
   if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(headCols[index])) {
     colorFilter = $(`
@@ -488,18 +475,14 @@ table.on('draw', function () {
     `);
   }
 
-  // Opções de valores únicos (checkboxes)
   let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
   const values = new Set();
   table.rows({ search: 'applied' }).data().each(function (row) {
-  // row pode ser um array de HTML, então pegue a coluna correta
   let val = row[index];
   
-  // Verifique se val é um objeto com a propriedade "display"
   if (typeof val === 'object' && val !== null && val.display) {
-    val = val.display; // Extraia apenas o valor da propriedade "display"
+    val = val.display; 
   } else if (typeof val === 'string') {
-    // Se for HTML, extraia o texto
     val = $('<div>').html(val).text().trim();
   } else if (val && val.textContent) {
     val = val.textContent.trim();
@@ -512,7 +495,6 @@ table.on('draw', function () {
   filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
 });
 
-  // Ordenação
   let sortBtns = $(`
     <div class="filter-sort mb-2" style="font-size:15px;">
       <span style="margin-right:8px;">Ordenar:</span>
@@ -522,11 +504,9 @@ table.on('draw', function () {
     </div>
   `);
 
-  // Botões aplicar/limpar
   let applyButton = $('<button class="apply-filter btn btn-success w-100 mt-2">Aplicar Filtro</button>');
   let clearButton = $('<button class="clear-filter btn btn-secondary w-100 mt-1">Limpar Filtros</button>');
 
-  // Monta o popup
   popup.append(header);
   popup.append(searchInput);
   popup.append(emptyFilter);
@@ -536,7 +516,6 @@ table.on('draw', function () {
   popup.append(applyButton);
   popup.append(clearButton);
 
-  // Estilo e posição
   popup.css({
     position: 'absolute',
     zIndex: 9999,
@@ -553,19 +532,16 @@ table.on('draw', function () {
     zoom: '190%'
   }).data('column', index);
 
-  // Fechar popup
   popup.find('.close-popup').on('click', function () { popup.hide(); });
 
-  // Busca dinâmica
   searchInput.on('keyup', function () {
-    let filterValue = $(this).val().toLowerCase();
-    filterOptions.find('div').each(function () {
-      let label = $(this).text().toLowerCase();
-      $(this).toggle(label.includes(filterValue));
-    });
+  let filterValue = $(this).val().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove acentuação
+  filterOptions.find('div').each(function () {
+    let label = $(this).text().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove acentuação
+    $(this).toggle(label.includes(filterValue));
+  });
   });
 
-  // Filtro por vazio/não vazio
   popup.find('.filter-empty').on('change', function () {
     if (this.checked) popup.find('.filter-notempty').prop('checked', false);
   });
@@ -573,7 +549,6 @@ table.on('draw', function () {
     if (this.checked) popup.find('.filter-empty').prop('checked', false);
   });
 
-  // Filtro por cor
   if (colorFilter) {
     colorFilter.find('.color-dot').on('click', function () {
       colorFilter.find('.color-dot').removeClass('selected');
@@ -581,40 +556,34 @@ table.on('draw', function () {
     });
   }
 
-  // Ordenação
   sortBtns.find('.sort-asc').on('click', function () {
-    console.log("Sort Asc Clicked, index:", index); // Debugging
+    console.log("Sort Asc Clicked, index:", index); 
     table.order([index, 'asc']).draw();
   });
   sortBtns.find('.sort-desc').on('click', function () {
-    console.log("Sort Desc Clicked, index:", index); // Debugging
+    console.log("Sort Desc Clicked, index:", index); 
     table.order([index, 'desc']).draw();
   });
   sortBtns.find('.sort-clear').on('click', function () {
-    console.log("Sort Clear Clicked"); // Debugging
+    console.log("Sort Clear Clicked"); 
         table.order([5, 'asc']).draw();
   });
 
-  // Aplicar filtro
   applyButton.on('click', function () {
     let regex = '';
-    // Filtro por valor vazio/não vazio
     if (popup.find('.filter-empty').prop('checked')) {
       regex = '^\\s*$';
     } else if (popup.find('.filter-notempty').prop('checked')) {
       regex = '^\\s*\\S+';
     } else {
-      // Filtro por valores selecionados
       const vals = filterOptions.find('input[type="checkbox"]:checked').map(function () {
         return '^' + $.fn.dataTable.util.escapeRegex($(this).val()) + '$';
       }).get();
       regex = vals.join('|');
     }
-    // Filtro por cor
     if (colorFilter) {
       const selectedColor = colorFilter.find('.color-dot.selected').data('color');
       if (selectedColor && selectedColor !== 'all') {
-        // Adiciona regex para cor (baseado em valor)
         if (selectedColor === 'darkgreen') regex = regex ? `(?=.*${regex})^100$` : '^100$';
         if (selectedColor === 'lightgreen') regex = regex ? `(?=.*${regex})(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)` : '(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)';
         if (selectedColor === 'orange') regex = regex ? `(?=.*${regex})(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)` : '(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)';
@@ -626,7 +595,6 @@ table.on('draw', function () {
     popup.hide();
   });
 
-  // Limpar filtro
   clearButton.on('click', function () {
     table.column(index).search('').draw();
     filterOptions.find('input[type="checkbox"]').prop('checked', false);
@@ -642,7 +610,6 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
 
       updateCards();
 
-      // Evento de clique nas células de mês
       $('#oltTable tbody').on('click', 'td.month-cell', function() {
         const $td = $(this);
         const rowIdx = $td.data('row');
@@ -659,9 +626,7 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
       });
     }
 
-    // Função para adicionar bolinha indicadora nas células de mês com causa preenchida
     function addCausaIndicators() {
-      // Seleciona todas as células de mês
       $('#oltTable td.month-cell').each(function () {
         const $td = $(this);
         const rowIdx = $td.data('row');
@@ -669,17 +634,15 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
         const site = $td.data('site');
         if (!site || !colKey) return;
 
-        // Gera o id do registro no Firebase
         const id = btoa(`${site}|${colKey}`);
 
-        // Consulta o Firebase para saber se há causa preenchida
         db.ref('dispmovel/' + id).once('value').then(snap => {
           const val = snap.val();
           if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
-            // Adiciona a bolinha no canto superior direito da célula
             if ($td.find('.causa-indicator').length === 0) {
               $td.css('position', 'relative');
-              $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#0011ff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');            }
+              $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#0011ff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');  
+                      }
           }
         });
       });
@@ -695,7 +658,6 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
       const filtered = dadosDisponibilidade.filter(i => bairroSet.has(i.SITE));
       const total = filtered.length;
 
-  // Encontra o nome da coluna de critical2
   const mesAtual = currentMonths.at(-1)?.toLowerCase();
   const crit2ColName = headCols.find(c =>
   c.toLowerCase().includes('criticidade') &&
@@ -725,18 +687,22 @@ function updateCardsComFiltros() {
   const filteredRows = table.rows({ search: 'applied' }).data().toArray();
 
   const siteIndex = headCols.findIndex(c => c === 'SITE');
+  const bairroIndex = headCols.findIndex(c => c === 'Bairros');
   const siteBairroSet = new Set(dadosSitesBairro.map(s => s.Site));
 
   let total = filteredRows.length;
   let totalBairro = 0;
+  const bairrosUnicos = new Set();
 
   filteredRows.forEach(row => {
     const site = $('<div>').html(row[siteIndex]).text().trim();
+    const bairro = $('<div>').html(row[bairroIndex]).text().trim();
     if (siteBairroSet.has(site)) totalBairro++;
+    if (bairro && bairro !== '-') bairrosUnicos.add(bairro); // Ignora valores "-"
   });
 
   $('#totalSitesCard').text(`Total de Sites: ${total}`);
-  $('#sitesBairroCard').text(`Total Sites Bairro: ${totalBairro}`);
+  $('#sitesBairroCard').text(`Total Sites Bairro: ${totalBairro} / ${bairrosUnicos.size}`);
 }
 
 
@@ -941,7 +907,6 @@ function updateCardsComFiltros() {
     });
   });
 
-  // Fecha popup ao clicar fora
   $(document).off('click.filtroFechamento').on('click.filtroFechamento', function (e) {
     const $target = $(e.target);
     if (
@@ -957,10 +922,8 @@ function updateCardsComFiltros() {
 
 function setupActions() {
   $('#clearFilters').on('click', () => {
-  // Limpa busca global e por colunas
   table.search('').columns().search('').draw();
 
-  // Reseta a ordenação para a ordem padrão
       table.order([5, 'asc']).draw();
 
   $('.filter-btn').removeClass('filtered');
@@ -1018,7 +981,6 @@ function setupActions() {
           });
         }
       } catch (err) {
-        // Mantive o catch só pra evitar erros parando o script, sem log
       }
     }
   }
@@ -1036,19 +998,14 @@ function setupActions() {
 
 
 
-// Limpa os "▼" dos cabeçalhos (faz isso logo depois de capturar headCols)
 headCols = headCols.map(c => c.replace(/\s*▼$/, '').trim());
 
-// Índice da coluna SITE (ajuste para refletir a posição correta)
 const siteIdx = headCols.findIndex(c => c === 'SITE');
 
-// Define o índice da coluna de criticidade correta
 const crit2Idx = headCols.findIndex(c => c.startsWith('Criticidade') && c.includes(currentMonths.at(-1)));
 
-// Define o regex dos sites do bairro
 const bairroRegex = dadosSitesBairro.map(s => `^${s.Site}$`).join('|');
 
-// Função para filtrar com base nos cards
 function cardFilter(id, crit, showAll = false) {
   $(id).off('click').on('click', () => {
     table.search('').columns().search('').draw();
@@ -1065,7 +1022,6 @@ function cardFilter(id, crit, showAll = false) {
   });
 }
 
-  // 🔧 Agora esse aqui limpa tudo e mostra todos os sites
   cardFilter('#totalSitesCard', null, true);
   cardFilter('#sitesBairroCard', null);
   cardFilter('#criticalSitesCard', 'Crítico');
@@ -1073,7 +1029,6 @@ function cardFilter(id, crit, showAll = false) {
   cardFilter('#nonCriticalSitesCard', 'Não Crítico');
 }
 
-    // --- Firebase Configuração ---
     const firebaseConfig = {
   apiKey: "AIzaSyC0WOkW73igO0B2LFVKDJr7uveWPf4d4Uk",
   authDomain: "database-dispmovel.firebaseapp.com",
@@ -1087,41 +1042,35 @@ function cardFilter(id, crit, showAll = false) {
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- Modal lógica ---
     let currentEdit = null;
     function showEditModal(rowData, colKey, colDisplay, cellElem) {
   currentEdit = { rowData, colKey, cellElem };
   const disponibilidade = rowData[colKey]; 
 
-  // Determina a cor do texto com base no valor da disponibilidade
   let disponibilidadeColor = '';
   const n = parseFloat(disponibilidade.toString().replace(',', '.'));
   if (n === 100) {
-    disponibilidadeColor = '#337031'; // Verde escuro
+    disponibilidadeColor = '#337031'; 
   } else if (n > 98) {
-    disponibilidadeColor = '#00b050'; // Verde claro
+    disponibilidadeColor = '#00b050'; 
   } else if (n > 96) {
-    disponibilidadeColor = '#ffff00'; // Laranja
+    disponibilidadeColor = '#ffff00'; 
   } else {
-    disponibilidadeColor = '#ff0000'; // Vermelho
+    disponibilidadeColor = '#ff0000'; 
   }
 
-  // Atualiza o título do modal com a formatação de cor no texto
   $('#modalTitle').html(`Editar: ${rowData['SITE']} - ${colDisplay} - <span style="color:${disponibilidadeColor}; font-weight:bold;">${disponibilidade}%</span>`);
 
   $('#modalMsg').hide();
   $('#editForm')[0].reset();
 
-  // Garante os campos inicialmente trancados
   $('#causaInput1, #causaInput2,#causaInput3, #solucaoInput, #responsavelInput').prop('disabled', true);
   $('#editBtn').text('Editar');
 
-  // Carregar dados do Firebase
   const id = btoa(`${rowData['SITE']}|${colKey}`);
   db.ref('dispmovel/' + id).once('value').then(snap => {
     const val = snap.val() || {};
 
-    // Função para preencher select/outro corretamente
     function setCausaSelect(num, value) {
       const select = $(`#causaInput${num}`);
       const outro = $(`#causaOutro${num}`);
@@ -1153,7 +1102,6 @@ function cardFilter(id, crit, showAll = false) {
       const { rowData, colKey, cellElem } = currentEdit;
       const id = btoa(`${rowData['SITE']}|${colKey}`);
 
-      // Função para pegar valor correto da causa (select ou outro)
       function getCausaValue(num) {
         const select = $(`#causaInput${num}`);
         const outro = $(`#causaOutro${num}`);
@@ -1181,7 +1129,6 @@ function cardFilter(id, crit, showAll = false) {
       const inputs = $('#causaInput1, #causaInput2, #causaInput3, #solucaoInput, #responsavelInput');
       const isDisabled = inputs.prop('disabled');
       inputs.prop('disabled', !isDisabled);
-      // Alterna o texto do botão conforme o estado dos campos
       $(this).text(isDisabled ? 'Bloquear' : 'Editar');
     });
 
@@ -1219,13 +1166,11 @@ function cardFilter(id, crit, showAll = false) {
 
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Checa se já temos o nome salvo
     let nomeUsuario = localStorage.getItem("nomeUsuario");
 
-    // Se não, tenta perguntar e salvar
     if (!nomeUsuario) {
       const agente = navigator.userAgent;
-      console.log("Navegador e sistema detectados:", agente); // apenas informativo
+      console.log("Navegador e sistema detectados:", agente); 
 
       nomeUsuario = prompt("Digite seu nome (isso será salvo no navegador):");
       if (nomeUsuario) {
@@ -1233,7 +1178,6 @@ function cardFilter(id, crit, showAll = false) {
       }
     }
 
-    // Ao clicar no botão "Editar"
     document.getElementById('editBtn').addEventListener('click', () => {
       const input = document.getElementById('responsavelInput');
       input.disabled = false;
@@ -1244,5 +1188,22 @@ function cardFilter(id, crit, showAll = false) {
     });
   });
   </script>
+
+<script>
+  fetch('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json', { method: 'HEAD' })
+    .then(response => {
+      const lastModified = response.headers.get('Last-Modified');
+      if (lastModified) {
+        const dataFormatada = new Date(lastModified).toLocaleString('pt-BR');
+        document.getElementById('updateInfo').textContent = `Atualizado em: ${dataFormatada}`;
+      } else {
+        document.getElementById('updateInfo').textContent = `Data de atualização indisponível`;
+      }
+    })
+    .catch(err => {
+      document.getElementById('updateInfo').textContent = `Erro ao obter atualização`;
+      console.error('Erro ao buscar cabeçalho do JSON:', err);
+    });
+</script>
 </body>
 </html>
