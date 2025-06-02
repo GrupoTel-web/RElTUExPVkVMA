@@ -104,7 +104,8 @@
     <option value="Implantação">Implantação</option>
     <option value="Outro">Outro</option>
   </select>
-  <input type="text" class="form-control mt-2" id="causaOutro1" placeholder="Descreva a causa" style="display:none;" />
+  <textarea class="form-control mt-2 auto-resize" id="causaOutro1" placeholder="Descreva a causa" style="display:none;" rows="1"></textarea>
+  
 </div><br>
 
 
@@ -123,7 +124,7 @@
     <option value="Implantação">Implantação</option>
     <option value="Outro">Outro</option>
   </select>
-  <input type="text" class="form-control mt-2" id="causaOutro2" placeholder="Descreva a causa" style="display:none;" />
+  <textarea class="form-control mt-2 auto-resize" id="causaOutro2" placeholder="Descreva a causa" style="display:none;" rows="1"></textarea>
 </div><br>
 
 <div class="mb-2">
@@ -141,18 +142,18 @@
     <option value="Implantação">Implantação</option>
     <option value="Outro">Outro</option>
   </select>
-  <input type="text" class="form-control mt-2" id="causaOutro3" placeholder="Descreva a causa" style="display:none;" />
+  <textarea class="form-control mt-2 auto-resize" id="causaOutro3" placeholder="Descreva a causa" style="display:none;" rows="1"></textarea>
 </div>
 
 
-      <div class="mb-2">
-        <label class="form-label">✅ Ação Realizada</label>
-        <input type="text" class="form-control" id="solucaoInput">
-      </div>
-      <div class="mb-2">
-        <label class="form-label">🧑‍💼 Responsável</label>
-        <input type="text" class="form-control" id="responsavelInput">
-      </div>
+<div class="mb-2">
+  <label class="form-label">✅ Ação Realizada</label>
+  <textarea class="form-control auto-resize" id="solucaoInput" rows="1"></textarea>
+</div>
+<div class="mb-2">
+  <label class="form-label">🧑‍💼 Responsável</label>
+  <textarea class="form-control auto-resize" id="responsavelInput" rows="1"></textarea>
+</div>
       <button type="button" id="editBtn" class="btn btn-secondary w-100 mt-2">Editar</button>
       <button type="submit" class="btn btn-primary w-100 mt-2">Salvar</button>
     </form>
@@ -207,27 +208,25 @@
       setupActions();
     }).catch(err => console.error(err));
 
-    function formatCell(value) {
-      if (value == null || value === '') return '<td></td>';
-      const n = parseFloat(value.toString().replace(',', '.'));
-      let bg = '';
-      let color = ''; 
-      if (n === 100) {
-          bg = '#337031'; 
-          color = '#fff'; 
-      } else if (n > 98) {
-          bg = '#00b050'; 
-          color = '#fff'; 
-      } else if (n > 96) {
-          bg = '#ffff00'; 
-          color = '#000'; 
-      } else {
-          bg = '#ff0000'; 
-          color = '#fff'; 
-      }
-      const disp = (n === 100 || n === 0) ? String(n) : n.toFixed(2).replace('.', ',');
-      return `<td style="background-color:${bg}; color:${color}" data-order="${n}">${disp}</td>`;
-    }
+    function formatCell(value, rowIdx, colKey, colDisplay, site) {
+  if (value == null || value === '') return `<td class="date-cell" data-row="${rowIdx}" data-colkey="${colKey}" data-coldisplay="${colDisplay}" data-site="${site}" style="cursor:pointer;"></td>`;
+
+  const n = parseFloat(value.toString().replace(',', '.'));
+  let bg = '', color = ''; 
+  if (n === 100) {
+    bg = '#337031'; color = '#fff';
+  } else if (n > 98) {
+    bg = '#00b050'; color = '#fff';
+  } else if (n > 96) {
+    bg = '#ffff00'; color = '#000';
+  } else {
+    bg = '#ff0000'; color = '#fff';
+  }
+
+  const disp = (n === 100 || n === 0) ? String(n) : n.toFixed(2).replace('.', ',');
+
+  return `<td class="date-cell" style="background-color:${bg}; color:${color}; cursor:pointer;" data-order="${n}" data-row="${rowIdx}" data-colkey="${colKey}" data-coldisplay="${colDisplay}" data-site="${site}">${disp}</td>`;
+}
 
     function getDynamicMonthHeaders(data) {
       const valid = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -363,7 +362,7 @@ return keys.map(m => {
     const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
     html += `<td class="month-cell" style="background-color:${bg}; color:${color}; cursor:pointer;" data-order="${n}" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE'] || ''}">${disp}</td>`;
   });
-  dateHeaders.forEach(h => html += formatCell(it[h.key]));
+  dateHeaders.forEach(h => {html += formatCell(it[h.key], rowIdx, h.key, h.display, it['SITE']);});
   html += `<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
   html += `<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
 
@@ -610,43 +609,43 @@ $(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
 
       updateCards();
 
-      $('#oltTable tbody').on('click', 'td.month-cell', function() {
-        const $td = $(this);
-        const rowIdx = $td.data('row');
-        const colKey = $td.data('colkey');
-        const colDisplay = $td.data('coldisplay');
-        const site = $td.data('site');
-        const rowData = dadosDisponibilidade ? dadosDisponibilidade[rowIdx] : null;
+      $('#oltTable tbody').on('click', 'td.month-cell, td.date-cell', function() {
+  const $td = $(this);
+  const rowIdx = $td.data('row');
+  const colKey = $td.data('colkey'); // Identifica a chave da coluna (mês ou dia)
+  const colDisplay = $td.data('coldisplay'); // Nome exibido da coluna
+  const site = $td.data('site'); // Identifica o site associado à célula
+  const rowData = dadosDisponibilidade ? dadosDisponibilidade[rowIdx] : null;
 
-        if (rowData) {
-          showEditModal(rowData, colKey, colDisplay, this);
-        } else {
-          console.error('Dados de linha não encontrados para o índice:', rowIdx);
-        }
-      });
+  if (rowData) {
+    showEditModal(rowData, colKey, colDisplay, this); // Exibe o modal
+  } else {
+    console.error('Dados de linha não encontrados para o índice:', rowIdx);
+  }
+});
     }
 
     function addCausaIndicators() {
-      $('#oltTable td.month-cell').each(function () {
-        const $td = $(this);
-        const rowIdx = $td.data('row');
-        const colKey = $td.data('colkey');
-        const site = $td.data('site');
-        if (!site || !colKey) return;
+  $('#oltTable td.month-cell, #oltTable td.date-cell').each(function () {
+    const $td = $(this);
+    const rowIdx = $td.data('row');
+    const colKey = $td.data('colkey');
+    const site = $td.data('site');
+    if (!site || !colKey) return;
 
-        const id = btoa(`${site}|${colKey}`);
+    const id = btoa(`${site}|${colKey}`);
 
-        db.ref('dispmovel/' + id).once('value').then(snap => {
-          const val = snap.val();
-          if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
-            if ($td.find('.causa-indicator').length === 0) {
-              $td.css('position', 'relative');
-              $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#0011ff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');  
-                      }
-          }
-        });
-      });
-    }
+    db.ref('dispmovel/' + id).once('value').then(snap => {
+      const val = snap.val();
+      if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
+        if ($td.find('.causa-indicator').length === 0) {
+          $td.css('position', 'relative');
+          $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#0011ff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');  
+        }
+      }
+    });
+  });
+}
 
   function updateCards() {
       if (!dadosSitesBairro || !dadosDisponibilidade) {
@@ -1186,6 +1185,13 @@ function cardFilter(id, crit, showAll = false) {
         input.value = nomeUsuario;
       }
     });
+  });
+
+  document.addEventListener('input', function (event) {
+    if (event.target.classList.contains('auto-resize')) {
+      event.target.style.height = 'auto'; // Redefine a altura
+      event.target.style.height = `${event.target.scrollHeight}px`; // Ajusta para o conteúdo
+    }
   });
   </script>
 
