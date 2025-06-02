@@ -279,351 +279,169 @@ return keys.map(m => {
 
 
 
-    function initializeTable() {
-      const today = new Date();
-      const dateHeaders = [];
-      for (let i = 7; i >= 1; i--) {
-        const d = new Date(today); d.setDate(d.getDate()-i);
-        const dd = String(d.getDate()).padStart(2,'0');
-        const mm = String(d.getMonth()+1).padStart(2,'0');
-        dateHeaders.push({ key:`${dd}/${mm}/${d.getFullYear()}`, display:`Disp. ${dd}/${mm}` });
+function initializeTable() {
+  const today = new Date();
+  const dateHeaders = [];
+  for (let i = 7; i >= 1; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    dateHeaders.push({ key: `${dd}/${mm}/${d.getFullYear()}`, display: `Disp. ${dd}/${mm}` });
+  }
+  const monthHeaders = getDynamicMonthHeaders(dadosDisponibilidade);
+  const lastMonths = monthHeaders.slice(-2);
+
+  dadosDisponibilidade = dadosDisponibilidade.map(item => {
+    const cols = calculateColumns(item, monthHeaders);
+    let projMedia = item['PROJECAO_MEDIA'];
+    if (projMedia === '' || projMedia === 0 || projMedia === '0') projMedia = '100';
+    return { ...item,
+      [`Criticidade ${lastMonths[0].display}`]: cols.critical1,
+      [`Criticidade ${lastMonths[1].display}`]: cols.critical2,
+      'Proj. Média': projMedia
+    };
+  });
+
+  headCols = [
+    'DDD',
+    'MUNICIPIO',
+    'Qtd Bairros', // Adiciona a nova coluna ao cabeçalho
+    'Parque',      // Adiciona a nova coluna ao cabeçalho
+    'Bairros',
+    'TAV?',
+    'Bairro Alto Valor',
+    'SITE',
+    ...monthHeaders.map(m => m.display),
+    ...dateHeaders.map(h => h.display),
+    `Criticidade ${lastMonths[0].display}`,
+    `Criticidade ${lastMonths[1].display}`, 'Proj. Média'
+  ];
+
+  const theadHtml = `
+    <tr>
+      ${headCols.map((c, i) => `
+        <th>
+          ${c} <button class="filter-btn" data-column="${i}" style="border:none;background:none;size: 20px;">▼</button>
+          <div class="filter-popup" data-column="${i}" style="display:none;position:absolute;z-index:1000;background:white;border:1px solid #ccc;padding:10px;">
+            <input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar...">
+            <div class="filter-options" style="max-height:150px;overflow:auto;"></div>
+            <button class="apply-filter btn btn-sm btn-primary mt-2">Aplicar</button>
+            <button class="clear-filter btn btn-sm btn-secondary mt-1">Limpar</button>
+          </div>
+        </th>`).join('')}
+    </tr>`;
+  $('#oltTable thead').html(theadHtml);
+
+  let html = '';
+  dadosDisponibilidade.forEach((it, rowIdx) => {
+    html += '<tr>';
+    html += `<td>${it['DDD'] || ''}</td>`;
+    html += `<td>${it['MUNICIPIO'] || ''}</td>`;
+
+    // Adiciona os valores de "Qtd Bairros" e "Parque"
+    let siteKey = String(it['SITE'] || '').trim().toUpperCase();
+    const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
+    html += `<td>${siteExtra && siteExtra['Qtd Bairro'] ? siteExtra['Qtd Bairro'] : '-'}</td>`;
+    html += `<td>${siteExtra && siteExtra['Parque'] ? siteExtra['Parque'] : '-'}</td>`;
+
+    html += `<td class="bairro-column">${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
+    html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
+    html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
+    html += `<td>${it['SITE'] || ''}</td>`;
+    monthHeaders.forEach((m, colIdx) => {
+      const val = it[m.key];
+      const n = val == null || val === '' ? null : parseFloat(val.toString().replace(',', '.'));
+      let bg = '';
+      let color = '';
+      if (n === 100) {
+        bg = '#337031';
+        color = '#ffffff';
+      } else if (n > 98) {
+        bg = '#00b050';
+        color = '#ffffff';
+      } else if (n > 96) {
+        bg = '#ffff00';
+        color = '#000000';
+      } else if (n != null) {
+        bg = '#ff0000';
+        color = '#ffffff';
       }
-      const monthHeaders = getDynamicMonthHeaders(dadosDisponibilidade);
-      const lastMonths = monthHeaders.slice(-2);
-
-      dadosDisponibilidade = dadosDisponibilidade.map(item => {
-        const cols = calculateColumns(item, monthHeaders);
-        let projMedia = item['PROJECAO_MEDIA'];
-        if (projMedia === '' || projMedia === 0 || projMedia === '0') projMedia = '100';
-        return { ...item,
-          [`Criticidade ${lastMonths[0].display}`]: cols.critical1,
-          [`Criticidade ${lastMonths[1].display}`]: cols.critical2,
-          'Proj. Média': projMedia
-        };
-      });
-
-      headCols = [
-        'DDD',
-        'MUNICIPIO',
-        'Bairros',
-        'TAV?',
-        'Bairro Alto Valor',
-        'SITE',
-        ...monthHeaders.map(m=>m.display),
-        ...dateHeaders.map(h=>h.display),
-        `Criticidade ${lastMonths[0].display}`,
-        `Criticidade ${lastMonths[1].display}`,'Proj. Média'
-      ];
-      const theadHtml = `
-        <tr>
-          ${headCols.map((c, i) => `
-            <th>
-              ${c} <button class="filter-btn" data-column="${i}" style="border:none;background:none;size: 20px;">▼</button>
-              <div class="filter-popup" data-column="${i}" style="display:none;position:absolute;z-index:1000;background:white;border:1px solid #ccc;padding:10px;">
-                <input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar...">
-                <div class="filter-options" style="max-height:150px;overflow:auto;"></div>
-                <button class="apply-filter btn btn-sm btn-primary mt-2">Aplicar</button>
-                <button class="clear-filter btn btn-sm btn-secondary mt-1">Limpar</button>
-              </div>
-            </th>`).join('')}
-        </tr>`;
-      $('#oltTable thead').html(theadHtml);
-      $('#oltTable thead').html(theadHtml);
-
-      let html='';
-      dadosDisponibilidade.forEach((it, rowIdx) => {
-  html += '<tr>';
-  html += `<td>${it['DDD'] || ''}</td>`;
-  html += `<td>${it['MUNICIPIO'] || ''}</td>`;
-  let siteKey = String(it['SITE'] || '').trim().toUpperCase();
-  const siteExtra = window.siteExtraMap && siteKey ? window.siteExtraMap[siteKey] : null;
-  html += `<td class="bairro-column">${siteExtra && siteExtra['Bairros'] ? siteExtra['Bairros'] : '-'}</td>`;
-  html += `<td>${siteExtra && siteExtra['TAV?'] ? siteExtra['TAV?'] : 'Não'}</td>`;
-  html += `<td>${siteExtra && siteExtra['Bairro Alto Valor'] ? siteExtra['Bairro Alto Valor'] : 'Não'}</td>`;
-  html += `<td>${it['SITE'] || ''}</td>`;
-  monthHeaders.forEach((m, colIdx) => {
-    const val = it[m.key];
-    const n = val == null || val === '' ? null : parseFloat(val.toString().replace(',', '.'));
-    let bg = '';
-    let color = '';
-    if (n === 100) {
-      bg = '#337031'; 
-      color = '#ffffff'; 
-    } else if (n > 98) {
-      bg = '#00b050';
-      color = '#ffffff'; 
-    } else if (n > 96) {
-      bg = '#ffff00'; 
-      color = '#000000'; 
-    } else if (n != null) {
-      bg = '#ff0000'; 
-      color = '#ffffff'; 
-    }
-    const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
-    html += `<td class="month-cell" style="background-color:${bg}; color:${color}; cursor:pointer;" data-order="${n}" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE'] || ''}">${disp}</td>`;
-  });
-  dateHeaders.forEach(h => {html += formatCell(it[h.key], rowIdx, h.key, h.display, it['SITE']);});
-  html += `<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
-  html += `<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
-
-  const projMedia = it['Proj. Média'];
-  let projValue = projMedia == null || projMedia === '' || projMedia === 0 || projMedia === '0' ? 100 : parseFloat(projMedia.toString().replace(',', '.'));
-  let projBg = '';
-  let projColor = '';
-  if (projValue === 100) {
-    projBg = '#337031'; 
-    projColor = '#ffffff';
-  } else if (projValue >= 98 && projValue < 100) {
-    projBg = '#00b050'; 
-    projColor = '#ffffff';
-  } else if (projValue >= 96 && projValue < 98) {
-    projBg = '#ffff00'; 
-    projColor = '#000000';
-  } else if (projValue < 96) {
-    projBg = '#ff0000'; 
-    projColor = '#ffffff';
-  }
-  let projDisplay = projValue === 100 ? '100' : (projMedia != null && projMedia !== '' ? projMedia : '');
-  projDisplay = projDisplay.toString().replace('.', ',');
-  html += `<td class="proj-media-cell" style="background-color:${projBg}; color:${projColor};" data-order="${projValue}">${projDisplay}</td>`;
-
-  html += '</tr>';
-});
-      $('#oltTable tbody').html(html);
-
-      addCausaIndicators();
-
-      table = $('#oltTable').DataTable({
-  paging:true,
-  pageLength:20,
-  ordering:true,
-  order:[[5,'asc']], 
-  scrollX:false,
-  language:{
-    paginate:{previous:'Anterior',next:'Próximo'},
-    info:'Mostrando _START_ a _END_ de _TOTAL_',
-    infoEmpty:'Mostrando 0 a 0 de 0',
-    zeroRecords:'Nenhum registro encontrado',
-    search:''
-  },
-  columnDefs: [
-    {
-      targets: headCols.length - 1, 
-      type: 'num',
-      orderDataType: 'dom-data-order'
-    },
-    { targets: '_all', orderable: false } 
-  ]
-});
-
-table.on('draw', function () {
-  updateCardsComFiltros();
-});
-
-      $('.filter-btn').on('click', function (e) {
-  e.stopPropagation();
-  $('.filter-popup').hide();
-  const index = $(this).data('column');
-  let popup = $('#filterContainer');
-  popup.empty();
-
-  let header = $(`
-  <div style="display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-weight:bold;font-size:18px;">Filtro Avançado</span>
-    <button class="close-popup" 
-            style="
-              width: 32px; 
-              height: 32px; 
-              border-radius: 50%; 
-              background-color: #dee2e6; 
-              border: none; 
-              display: flex; 
-              align-items: center; 
-              justify-content: center; 
-              font-size: 16px;
-              line-height: 1;
-              padding: 0;
-              cursor: pointer;
-            ">
-      &times;
-    </button>
-  </div>
-  <hr style="margin:8px 0;">
-`);
-
-  let searchInput = $('<input type="text" class="popup-search form-control form-control-sm mb-2" placeholder="Pesquisar valor...">');
-
-  let emptyFilter = $(`
-    <div class="mb-2" style="font-size:15px;">
-      <label><input type="checkbox" class="filter-empty" value="empty"> Somente vazios</label>
-      <label style="margin-left:10px;"><input type="checkbox" class="filter-notempty" value="notempty"> Somente preenchidos</label>
-    </div>
-  `);
-
-  let colorFilter = null;
-  if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(headCols[index])) {
-    colorFilter = $(`
-      <div class="mb-2" style="font-size:15px;">
-        <span style="margin-right:8px;">Cor:</span>
-        <span class="color-dot" data-color="darkgreen" style="background:#337031;" title="Ótimo"></span>
-        <span class="color-dot" data-color="lightgreen" style="background:#00b050;" title="Bom"></span>
-        <span class="color-dot" data-color="orange" style="background:#ffff00;" title="Alerta"></span>
-        <span class="color-dot" data-color="red" style="background:#ff0000;" title="Crítico"></span>
-        <span class="color-dot" data-color="all" style="background:#ccc;border:1px solid #888;" title="Todas"></span>
-      </div>
-    `);
-  }
-
-  let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
-  const values = new Set();
-  table.rows({ search: 'applied' }).data().each(function (row) {
-  let val = row[index];
-  
-  if (typeof val === 'object' && val !== null && val.display) {
-    val = val.display; 
-  } else if (typeof val === 'string') {
-    val = $('<div>').html(val).text().trim();
-  } else if (val && val.textContent) {
-    val = val.textContent.trim();
-  }
-
-  if (val) values.add(val);
-});
-
-[...values].sort().forEach(v => {
-  filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
-});
-
-  let sortBtns = $(`
-    <div class="filter-sort mb-2" style="font-size:15px;">
-      <span style="margin-right:8px;">Ordenar:</span>
-      <button class="btn btn-sm btn-outline-primary sort-asc">A-Z/↑</button>
-      <button class="btn btn-sm btn-outline-primary sort-desc">Z-A/↓</button>
-      <button class="btn btn-sm btn-outline-secondary sort-clear">Limpar</button>
-    </div>
-  `);
-
-  let applyButton = $('<button class="apply-filter btn btn-success w-100 mt-2">Aplicar Filtro</button>');
-  let clearButton = $('<button class="clear-filter btn btn-secondary w-100 mt-1">Limpar Filtros</button>');
-
-  popup.append(header);
-  popup.append(searchInput);
-  popup.append(emptyFilter);
-  if (colorFilter) popup.append(colorFilter);
-  popup.append(filterOptions);
-  popup.append(sortBtns);
-  popup.append(applyButton);
-  popup.append(clearButton);
-
-  popup.css({
-    position: 'absolute',
-    zIndex: 9999,
-    top: e.pageY + 10,
-    left: e.pageX + 160,
-    minWidth: '260px',
-    maxWidth: '350px',
-    background: '#fff',
-    border: '1px solid #bbb',
-    borderRadius: '10px',
-    boxShadow: '0 4px 18px rgba(0,0,0,0.13)',
-    padding: '18px 18px 12px 18px',
-    display: 'block',
-    zoom: '190%'
-  }).data('column', index);
-
-  popup.find('.close-popup').on('click', function () { popup.hide(); });
-
-  searchInput.on('keyup', function () {
-  let filterValue = $(this).val().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove acentuação
-  filterOptions.find('div').each(function () {
-    let label = $(this).text().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Remove acentuação
-    $(this).toggle(label.includes(filterValue));
-  });
-  });
-
-  popup.find('.filter-empty').on('change', function () {
-    if (this.checked) popup.find('.filter-notempty').prop('checked', false);
-  });
-  popup.find('.filter-notempty').on('change', function () {
-    if (this.checked) popup.find('.filter-empty').prop('checked', false);
-  });
-
-  if (colorFilter) {
-    colorFilter.find('.color-dot').on('click', function () {
-      colorFilter.find('.color-dot').removeClass('selected');
-      $(this).addClass('selected');
+      const disp = (n === 100 || n === 0) ? String(n) : n != null ? n.toFixed(2).replace('.', ',') : '';
+      html += `<td class="month-cell" style="background-color:${bg}; color:${color}; cursor:pointer;" data-order="${n}" data-row="${rowIdx}" data-colkey="${m.key}" data-coldisplay="${m.display}" data-site="${it['SITE'] || ''}">${disp}</td>`;
     });
-  }
+    dateHeaders.forEach(h => { html += formatCell(it[h.key], rowIdx, h.key, h.display, it['SITE']); });
+    html += `<td>${it[`Criticidade ${lastMonths[0].display}`]}</td>`;
+    html += `<td>${it[`Criticidade ${lastMonths[1].display}`]}</td>`;
 
-  sortBtns.find('.sort-asc').on('click', function () {
-    console.log("Sort Asc Clicked, index:", index); 
-    table.order([index, 'asc']).draw();
-  });
-  sortBtns.find('.sort-desc').on('click', function () {
-    console.log("Sort Desc Clicked, index:", index); 
-    table.order([index, 'desc']).draw();
-  });
-  sortBtns.find('.sort-clear').on('click', function () {
-    console.log("Sort Clear Clicked"); 
-        table.order([5, 'asc']).draw();
-  });
-
-  applyButton.on('click', function () {
-    let regex = '';
-    if (popup.find('.filter-empty').prop('checked')) {
-      regex = '^\\s*$';
-    } else if (popup.find('.filter-notempty').prop('checked')) {
-      regex = '^\\s*\\S+';
-    } else {
-      const vals = filterOptions.find('input[type="checkbox"]:checked').map(function () {
-        return '^' + $.fn.dataTable.util.escapeRegex($(this).val()) + '$';
-      }).get();
-      regex = vals.join('|');
+    const projMedia = it['Proj. Média'];
+    let projValue = projMedia == null || projMedia === '' || projMedia === 0 || projMedia === '0' ? 100 : parseFloat(projMedia.toString().replace(',', '.'));
+    let projBg = '';
+    let projColor = '';
+    if (projValue === 100) {
+      projBg = '#337031';
+      projColor = '#ffffff';
+    } else if (projValue >= 98 && projValue < 100) {
+      projBg = '#00b050';
+      projColor = '#ffffff';
+    } else if (projValue >= 96 && projValue < 98) {
+      projBg = '#ffff00';
+      projColor = '#000000';
+    } else if (projValue < 96) {
+      projBg = '#ff0000';
+      projColor = '#ffffff';
     }
-    if (colorFilter) {
-      const selectedColor = colorFilter.find('.color-dot.selected').data('color');
-      if (selectedColor && selectedColor !== 'all') {
-        if (selectedColor === 'darkgreen') regex = regex ? `(?=.*${regex})^100$` : '^100$';
-        if (selectedColor === 'lightgreen') regex = regex ? `(?=.*${regex})(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)` : '(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)';
-        if (selectedColor === 'orange') regex = regex ? `(?=.*${regex})(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)` : '(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)';
-        if (selectedColor === 'red') regex = regex ? `(?=.*${regex})(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)` : '(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)';
-      }
-    }
-    table.column(index).search(regex, true, false).draw();
-    $(`.filter-btn[data-column="${index}"]`).addClass('filtered');
-    popup.hide();
+    let projDisplay = projValue === 100 ? '100' : (projMedia != null && projMedia !== '' ? projMedia : '');
+    projDisplay = projDisplay.toString().replace('.', ',');
+    html += `<td class="proj-media-cell" style="background-color:${projBg}; color:${projColor};" data-order="${projValue}">${projDisplay}</td>`;
+
+    html += '</tr>';
+  });
+  $('#oltTable tbody').html(html);
+
+  addCausaIndicators();
+
+  table = $('#oltTable').DataTable({
+    paging: true,
+    pageLength: 20,
+    ordering: true,
+    order: [[5, 'asc']],
+    scrollX: false,
+    language: {
+      paginate: { previous: 'Anterior', next: 'Próximo' },
+      info: 'Mostrando _START_ a _END_ de _TOTAL_',
+      infoEmpty: 'Mostrando 0 a 0 de 0',
+      zeroRecords: 'Nenhum registro encontrado',
+      search: ''
+    },
+    columnDefs: [
+      {
+        targets: headCols.length - 1,
+        type: 'num',
+        orderDataType: 'dom-data-order'
+      },
+      { targets: '_all', orderable: false }
+    ]
   });
 
-  clearButton.on('click', function () {
-    table.column(index).search('').draw();
-    filterOptions.find('input[type="checkbox"]').prop('checked', false);
-    popup.find('.filter-empty, .filter-notempty').prop('checked', false);
-    if (colorFilter) colorFilter.find('.color-dot').removeClass('selected');
-    popup.hide();
-
-$(`.filter-btn[data-column="${index}"]`).removeClass('filtered');
-
+  table.on('draw', function () {
+    updateCardsComFiltros();
   });
-});
 
+  updateCards();
 
-      updateCards();
+  $('#oltTable tbody').on('click', 'td', function () {
+    const $cell = $(this);
+    const rowIdx = $cell.data('row');
+    const colKey = $cell.data('colkey');
+    const colDisplay = $cell.data('coldisplay');
+    const site = $cell.data('site');
 
-      $('#oltTable tbody').on('click', 'td.month-cell, td.date-cell', function() {
-  const $td = $(this);
-  const rowIdx = $td.data('row');
-  const colKey = $td.data('colkey'); // Identifica a chave da coluna (mês ou dia)
-  const colDisplay = $td.data('coldisplay'); // Nome exibido da coluna
-  const site = $td.data('site'); // Identifica o site associado à célula
-  const rowData = dadosDisponibilidade ? dadosDisponibilidade[rowIdx] : null;
-
-  if (rowData) {
-    showEditModal(rowData, colKey, colDisplay, this); // Exibe o modal
-  } else {
-    console.error('Dados de linha não encontrados para o índice:', rowIdx);
-  }
-});
+    if (rowIdx !== undefined && colKey && site) {
+      const rowData = dadosDisponibilidade[rowIdx];
+      showEditModal(rowData, colKey, colDisplay, this);
     }
+  });
+}
 
     function addCausaIndicators() {
   $('#oltTable td.month-cell, #oltTable td.date-cell').each(function () {
@@ -1007,11 +825,20 @@ const bairroRegex = dadosSitesBairro.map(s => `^${s.Site}$`).join('|');
 
 function cardFilter(id, crit, showAll = false) {
   $(id).off('click').on('click', () => {
-    table.search('').columns().search('').draw();
+    // Obtenha os filtros já aplicados
+    const currentSearch = table.column(siteIdx).search() || '';
+    const bairroRegex = dadosSitesBairro.map(s => `^${s.Site}$`).join('|');
 
+    // Combine o filtro atual com o filtro do card
+    let newSearch = currentSearch;
     if (!showAll) {
-      table.column(siteIdx).search(bairroRegex, true, false);
+      newSearch = currentSearch
+        ? `(${currentSearch})|(${bairroRegex})`
+        : bairroRegex;
     }
+
+    // Aplique o filtro combinado
+    table.column(siteIdx).search(newSearch, true, false);
 
     if (crit !== null) {
       table.column(crit2Idx).search(`^${crit}$`, true, false);
