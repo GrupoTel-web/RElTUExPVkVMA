@@ -197,6 +197,11 @@
     let table;
     let headCols = [];
 
+    localStorage.removeItem('dadosDisponibilidade');
+    localStorage.removeItem('dadosDisponibilidade_timestamp');
+    localStorage.removeItem('dadosSitesBairro');
+    localStorage.removeItem('dadosSitesBairro_timestamp');
+
     Promise.all([
       fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json', 'dadosDisponibilidade', 3600).then(d => dadosDisponibilidade = d),
       fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/sites.json', 'dadosSitesBairro', 3600).then(d => dadosSitesBairro = d)
