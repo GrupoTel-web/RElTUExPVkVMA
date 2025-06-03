@@ -51,6 +51,7 @@
     <div class="d-flex justify-content-center mb-4">
       <button id="abiBtn" class="btn btn-outline-info mx-2" style="font-size:22px;font-weight:600;">ABI</button>
       <button id="telBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">TEL</button>
+      <button id="spiBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">SPI</button>
     </div>
 
     <div class="search-card p-3 bg-none position-relative">
@@ -195,6 +196,7 @@
     let dadosSitesBairro = [];
     let currentMonths = [];
     let table;
+    let filtroDddPorBotao = false;
     let headCols = [];
 
     localStorage.removeItem('dadosDisponibilidade');
@@ -464,15 +466,20 @@ function initializeTable() {
 
     const id = btoa(`${site}|${colKey}`);
 
-    db.ref('dispmovel/' + id).once('value').then(snap => {
-      const val = snap.val();
-      if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
-        if ($td.find('.causa-indicator').length === 0) {
-          $td.css('position', 'relative');
-          $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#0011ff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');  
-        }
-      }
-    });
+    db.ref('dispmovel/' + id).on('value', snap => {
+  const val = snap.val();
+  const existing = $td.find('.causa-indicator');
+  const hasCausa = val && (val.causa1 || val.causa2 || val.causa3 || val.solucao);
+
+  $td.css('position', 'relative');
+
+  if (hasCausa && existing.length === 0) {
+    $td.append('<span class="causa-indicator" style="position:absolute;top:3px;left:5px;width:20px;height:20px;background:#0011ff;border-radius:50%;display:inline-block;border:2px solid #fff;z-index:2;"></span>');
+  } else if (!hasCausa && existing.length > 0) {
+    existing.remove();
+  }
+});
+
   });
 }
 
@@ -612,7 +619,7 @@ function updateCardsComFiltros() {
     );
 
     let colorFilter = null;
-    if (/disp|proj|criticidade|%|média|estimulada|^\d{2}\/\d{2}|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(headCols[index])) {
+    if (/disp|proj|%|média|estimulada|^\d{2}\/\d{2}|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/i.test(headCols[index])) {
       colorFilter = $(
         `<div class="mb-2" style="font-size:15px;">
           <span style="margin-right:8px;">Cor:</span>
@@ -628,10 +635,11 @@ function updateCardsComFiltros() {
     let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
     const values = new Set();
 
-    table.column(index).data().each(function (val) {
-      const texto = $('<div>').html(val).text().trim();
-      if (texto) values.add(texto);
-    });
+
+table.column(index, { search: 'applied' }).data().each(function (val) {
+  const texto = $('<div>').html(val).text().trim();
+  if (texto) values.add(texto);
+});
 
     [...values].sort().forEach(v => {
       filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
@@ -749,10 +757,18 @@ function updateCardsComFiltros() {
 
 
 function setupActions() {
-  $('#clearFilters').on('click', () => {
-  table.search('').columns().search('').draw();
+$('#clearFilters').on('click', () => {
+  table.search(''); // limpa filtro global
 
-      table.order([5, 'asc']).draw();
+  table.columns().every(function (colIdx) {
+    const colName = headCols[colIdx];
+    if (colName === 'DDD' && filtroDddPorBotao) {
+      return; // mantém filtro de DDD se veio de ABI/TEL
+    }
+    this.search('');
+  });
+
+  table.order([5, 'asc']).draw();
 
   $('.filter-btn').removeClass('filtered');
   $('.filter-checkbox, .select-all-checkbox').prop('checked', false);
@@ -880,10 +896,14 @@ function cardFilter(id, crit, showAll = false) {
     const db = firebase.database();
 
     let currentEdit = null;
+
+
     function showEditModal(rowData, colKey, colDisplay, cellElem) {
   currentEdit = { rowData, colKey, cellElem };
   const disponibilidade = rowData[colKey]; 
+  const id = btoa(`${rowData['SITE']}|${colKey}`);
 
+  // Cor conforme disponibilidade
   let disponibilidadeColor = '';
   const n = parseFloat(disponibilidade.toString().replace(',', '.'));
   if (n === 100) {
@@ -896,15 +916,31 @@ function cardFilter(id, crit, showAll = false) {
     disponibilidadeColor = '#ff0000'; 
   }
 
-  $('#modalTitle').html(`Editar: ${rowData['SITE']} - ${colDisplay} - <span style="color:${disponibilidadeColor}; font-weight:bold;">${disponibilidade}%</span>`);
+  // Título com botão de limpar
+  $('#modalTitle').html(`
+  <div style="display: flex; align-items: center; gap: 8px;">
+    <button id="limparCausaBtn" style="
+      background: none;
+      border: none;
+      color: #e74c3c;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+    " title="Limpar dados salvos">
+      🗑️
+    </button>
+    <span>Editar: ${rowData['SITE']} - ${colDisplay} - <span style="color:${disponibilidadeColor}; font-weight:bold;">${disponibilidade}%</span></span>
+  </div>
+`);
 
   $('#modalMsg').hide();
   $('#editForm')[0].reset();
 
+  // Desabilita campos inicialmente
   $('#causaInput1, #causaInput2,#causaInput3, #solucaoInput, #responsavelInput').prop('disabled', true);
   $('#editBtn').text('Editar');
 
-  const id = btoa(`${rowData['SITE']}|${colKey}`);
+  // Preenche dados do Firebase
   db.ref('dispmovel/' + id).once('value').then(snap => {
     const val = snap.val() || {};
 
@@ -927,12 +963,30 @@ function cardFilter(id, crit, showAll = false) {
     $('#solucaoInput').val(val.solucao || '');
     $('#responsavelInput').val(val.responsavel || '');
     $('#editModal').css('display', 'flex');
+
+    // Força ajuste do tamanho dos textareas
+    setTimeout(() => {
+      document.querySelectorAll('textarea.auto-resize').forEach(el => {
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+      });
+    }, 0);
+  });
+
+  // Evento do botão 🗑️
+  $('#limparCausaBtn').off('click').on('click', function () {
+    if (confirm('Tem certeza que deseja apagar os dados dessa célula?')) {
+      db.ref('dispmovel/' + id).remove().then(() => {
+        alert('Informações apagadas com sucesso!');
+        $('#editModal').hide();
+      }).catch(err => {
+        alert('Erro ao apagar: ' + err.message);
+      });
+    }
   });
 }
     $('#closeModalBtn').on('click', () => $('#editModal').hide());
-    $('#editModal').on('click', function(e) {
-      if (e.target === this) $(this).hide();
-    });
+
     $('#editForm').on('submit', function(e) {
       e.preventDefault();
       if (!currentEdit) return;
@@ -1032,20 +1086,75 @@ function cardFilter(id, crit, showAll = false) {
     }
   });
 
-  function setupAbiTelButtons() {
-  // Índice da coluna DDD
-  const dddIdx = headCols.findIndex(c => c === 'DDD');
-  $('#abiBtn').off('click').on('click', function() {
+  function setupAbiTelButtons() {const dddIdx = headCols.findIndex(c => c === 'DDD');
+
+$('#abiBtn').off('click').on('click', function () {
+  table.column(dddIdx).search('^11$', true, false).draw();
+  filtroDddPorBotao = true;
+
+  $('#abiBtn').addClass('selected-btn');
+  $('#telBtn, #spiBtn').removeClass('selected-btn');
+});
+
+$('#telBtn').off('click').on('click', function () {
+  table.column(dddIdx).search('^(?!11$).*$', true, false).draw();
+  filtroDddPorBotao = true;
+
+  $('#telBtn').addClass('selected-btn');
+  $('#abiBtn, #spiBtn').removeClass('selected-btn');
+});
+
+$('#spiBtn').off('click').on('click', function () {
+  table.column(dddIdx).search('').draw();
+  filtroDddPorBotao = false;
+
+  $('#abiBtn, #telBtn, #spiBtn').removeClass('selected-btn');
+});
+
+  function atualizarFiltrosAvancados() {
+    // Força atualização das opções visíveis nas popups de filtro avançado
+    $('.filter-btn').each(function () {
+      const colIndex = $(this).data('column');
+      const popup = $('.filter-popup[data-column="' + colIndex + '"]');
+      const optionsDiv = popup.find('.filter-options');
+
+      if (optionsDiv.length) {
+        const uniqueVals = new Set();
+        table.column(colIndex, { search: 'applied' }).data().each(function (val) {
+          const texto = $('<div>').html(val).text().trim();
+          if (texto) uniqueVals.add(texto);
+        });
+
+        optionsDiv.empty();
+        [...uniqueVals].sort().forEach(v => {
+          optionsDiv.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
+        });
+      }
+    });
+  }
+
+  $('#abiBtn').off('click').on('click', function () {
     table.column(dddIdx).search('^11$', true, false).draw();
+    filtroDddPorBotao = true;
+    $('#abiBtn').addClass('selected-btn');
+    $('#telBtn, #spiBtn').removeClass('selected-btn');
+    setTimeout(atualizarFiltrosAvancados, 300); // Aguarda draw da tabela
   });
-  $('#telBtn').off('click').on('click', function() {
+
+  $('#telBtn').off('click').on('click', function () {
     table.column(dddIdx).search('^(?!11$).*$', true, false).draw();
+    $('#telBtn').addClass('selected-btn');
+    $('#abiBtn, #spiBtn').removeClass('selected-btn');
+    setTimeout(atualizarFiltrosAvancados, 300);
   });
-  // Limpa filtro ao clicar nos cartões principais
-  $('#totalSitesCard,#sitesBairroCard,#criticalSitesCard,#alertSitesCard,#nonCriticalSitesCard').on('click', function() {
+
+  $('#spiBtn').off('click').on('click', function () {
     table.column(dddIdx).search('').draw();
+    $('#abiBtn, #telBtn, #spiBtn').removeClass('selected-btn');
+    setTimeout(atualizarFiltrosAvancados, 300);
   });
 }
+
 
 // Chame após a tabela ser inicializada
 $(document).ready(function() {
