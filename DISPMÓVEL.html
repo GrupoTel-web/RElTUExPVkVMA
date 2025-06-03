@@ -48,6 +48,11 @@
       <div class="dashboard-card green bg-success text-white p-3 rounded" id="nonCriticalSitesCard">Sites Não Críticos: 0</div>
     </div>
 
+    <div class="d-flex justify-content-center mb-4">
+      <button id="abiBtn" class="btn btn-outline-info mx-2" style="font-size:22px;font-weight:600;">ABI</button>
+      <button id="telBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">TEL</button>
+    </div>
+
     <div class="search-card p-3 bg-none position-relative">
       <div class="row g-2">
         <div class="col-md-3 position-relative" style="border: none;">
@@ -206,6 +211,7 @@
       initializeTable();
       setupFilters();
       setupActions();
+      setupAdvancedFilters();
     }).catch(err => console.error(err));
 
     function formatCell(value, rowIdx, colKey, colDisplay, site) {
@@ -1020,6 +1026,33 @@ function cardFilter(id, crit, showAll = false) {
       event.target.style.height = `${event.target.scrollHeight}px`; // Ajusta para o conteúdo
     }
   });
+
+  function setupAbiTelButtons() {
+  // Índice da coluna DDD
+  const dddIdx = headCols.findIndex(c => c === 'DDD');
+  $('#abiBtn').off('click').on('click', function() {
+    table.column(dddIdx).search('^11$', true, false).draw();
+  });
+  $('#telBtn').off('click').on('click', function() {
+    table.column(dddIdx).search('^(?!11$).*$', true, false).draw();
+  });
+  // Limpa filtro ao clicar nos cartões principais
+  $('#totalSitesCard,#sitesBairroCard,#criticalSitesCard,#alertSitesCard,#nonCriticalSitesCard').on('click', function() {
+    table.column(dddIdx).search('').draw();
+  });
+}
+
+// Chame após a tabela ser inicializada
+$(document).ready(function() {
+  // Aguarda a tabela ser criada
+  const interval = setInterval(function() {
+    if (typeof table !== 'undefined' && table) {
+      setupAbiTelButtons();
+      clearInterval(interval);
+    }
+  }, 200);
+});
+
   </script>
 
 <script>
