@@ -3,8 +3,14 @@ body {
   background: #f5f7fa;
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
   color: #232a36;
-  margin-left: 30px;
   zoom: 35%;
+}
+
+/* Container para largura máxima, sem margem/padding */
+.container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0px !important;
 }
 
 
@@ -20,18 +26,19 @@ body {
   font-weight: 600;
 }
 
-/* Hero Section */
+/* ======= Hero Section ======= */
 .hero-vivo {
   position: relative;
   background: linear-gradient(120deg, #4f5bd5 0%, #5f2c82 100%);
   height: 180px;
-  display: flex;
-  width: 99%;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 0 0 24px 24px;
-  box-shadow: 0 4px 24px rgba(44, 104, 25, 0.07);
+  box-shadow: 0 4px 24px var(--shadow);
+  margin: 0;
+  padding: 0;
 }
 .hero-overlay {
   position: absolute;
@@ -65,8 +72,7 @@ body {
   border-radius: 0;
 }
 .dashboard-card {
-  flex: 1 1 180px;
-  min-width: 180px;
+  flex: 1 1 120px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(44, 104, 25, 0.07);
@@ -192,20 +198,16 @@ body {
 .dropdown-list input[type="checkbox"] { margin-right: 8px; }
 
 /* Table Container */
-.table-container {
-  justify-content: center;
-  background: #fff;
+/* ======= Tabela ======= */
+.table-container, .table-wrapper {
+  background: var(--panel);
   border-radius: 0;
   box-shadow: none;
-  margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
-  width: 98%;
-  max-width: 98%;
-  padding-left: 0;
-  padding-right: 0;
   overflow-x: auto;
-  zoom: 90%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  zoom: 85%;
 }
 
 /* DataTable Styles */
@@ -251,27 +253,6 @@ table.dataTable tbody td {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* Bairro column scroll effect */
-table.dataTable tbody td.bairro-column {
-  max-width: 150px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  position: relative;
-}
-table.dataTable tbody td.bairro-column:hover span {
-  display: inline-block;
-  animation: scrollText 3.5s linear infinite;
-}
-table.dataTable tbody td.bairro-column span {
-  display: inline-block;
-  white-space: nowrap;
-}
-@keyframes scrollText {
-  0% { transform: translateX(0%); }
-  100% { transform: translateX(-100%); }
 }
 
 /* Ajustar largura do contêiner de filtros e botões de exportação */
@@ -502,7 +483,7 @@ table.dataTable tbody td.bairro-column {
   .search-card,
   .table-container {
     max-width: 100% !important;
-    width: 98%; /* Ajuste a largura conforme necessário */
+    width: 100%; /* Ajuste a largura conforme necessário */
     margin: 0 auto !important; /* Centraliza horizontalmente */
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -510,13 +491,6 @@ table.dataTable tbody td.bairro-column {
   }
 }
 
-/* Container para largura máxima, sem margem/padding */
-.container {
-  max-width: 99% !important;
-  width: 99% !important;
-  padding: 0 !important;
-  margin: 5px !important;
-}
 
 
 /* Tamanho do texto da paginação (Anterior, Próximo) */
@@ -588,4 +562,148 @@ textarea.auto-resize {
   color: #fff !important;
   border-color: #4f5bd5 !important;
   box-shadow: 0 4px 16px rgba(44, 104, 25, 0.13) !important;
+}
+
+#huntersBtn {
+  min-width: 180px;
+  width: 220px;
+  max-width: 100%;
+  border-radius: 1rem;
+  padding: 18px 0;
+  font-size: 1.7rem;
+  font-weight: 700;
+  border: 2px solid #d7a100;
+  background: #fff;
+  color: #ffc107;
+  box-shadow: 0 2px 12px rgba(44, 104, 25, 0.07);
+  margin: 0 8px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, border 0.2s;
+  text-align: center;
+  letter-spacing: 1px;
+  outline: none;
+  display: inline-block;
+}
+
+#huntersBtn:hover {
+  background: #ffc107;
+  color: #222;
+  box-shadow: 0 4px 18px rgba(44, 104, 25, 0.13);
+  border-color: #ffc107;
+}
+
+#huntersBtn:active {
+  background: #e6b100;
+  color: #222;
+  border-color: #e6b100;
+}
+
+.selected-btn-hunter {
+  background-color: #ffc107 !important;
+  color: #222 !important;
+  border-color: #ffc107 !important;
+  box-shadow: 0 4px 16px rgba(44, 104, 25, 0.13) !important;
+}
+
+
+#userModal {
+  position: fixed !important;
+  z-index: 99999 !important;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgb(0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  zoom: 300%;
+}
+
+#userModal > div {
+  background: #fff;
+  padding: 32px 28px;
+  border-radius: 12px;
+  min-width: 340px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.65);
+  position: relative;
+  max-width: 95vw;
+}
+
+@media (max-width: 500px) {
+  #userModal > div {
+    min-width: 90vw;
+    padding: 18px 8px;
+  }
+}
+
+
+
+/* Tabela de cidades: visual integrado e destaque */
+#cidadesTableContainer {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  background: #f8fafc;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(44, 104, 25, 0.10);
+  overflow-x: auto;
+}
+
+#cidadesTable {
+  width: 100% !important;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  font-size: 2.1rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(44,104,25,0.07);
+}
+
+#cidadesTable thead th {
+  background:#9595952c;
+  color: #373737;
+  font-weight: 800;
+  border-bottom: 3px solid #0051ff;
+  padding: 18px 14px;
+  text-align: center;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+}
+
+#cidadesTable tbody td {
+  border-bottom: 1px solid #ececec;
+  padding: 6px 2px;
+  text-align: center;
+  background: #fff;
+  white-space: nowrap;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #232a36;
+  transition: background 0.2s, color 0.2s;
+}
+
+#cidadesTable tbody tr:nth-child(even) td {
+  background: #f5f7fa;
+}
+
+#cidadesTable tbody tr:hover td {
+  background: #eaf0fb;
+  color: #4f5bd5;
+}
+
+#cidadesTable th, #cidadesTable td {
+  vertical-align: middle;
+}
+
+@media (max-width: 1200px) {
+  #cidadesTableContainer {
+    overflow-x: auto;
+  }
+  #cidadesTable {
+    font-size: 1.1rem;
+  }
+  #cidadesTable thead th, #cidadesTable tbody td {
+    font-size: 1.1rem;
+    padding: 10px 6px;
+  }
 }
