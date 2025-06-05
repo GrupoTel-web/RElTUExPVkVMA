@@ -19,6 +19,37 @@
 
 </head>
 <body>
+
+  <div id="userModal" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;">
+    <div style="background:#fff;padding:32px 28px;border-radius:12px;min-width:340px;box-shadow:0 4px 24px #0002;position:relative;">
+      <h4 style="margin-bottom:18px;">Identificação do Usuário</h4>
+      <form id="userForm" autocomplete="off">
+        <div class="mb-2">
+          <label>Nome</label>
+          <input type="text" id="userNome" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label>Número</label>
+          <input type="text" id="userNumero" class="form-control" required pattern="^[0-9()+\- ]{8,}$" title="Digite um número válido">
+        </div>
+        <div class="mb-2">
+          <label>Email</label>
+          <input type="email" id="userEmail" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label>Empresa</label>
+          <select id="userEmpresa" class="form-select" required>
+            <option value="" disabled selected>Selecione</option>
+            <option value="VIVO">VIVO</option>
+            <option value="ABILITY">ABILITY</option>
+            <option value="TEL">TEL</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mt-2">Salvar</button>
+      </form>
+    </div>
+  </div>
+
   <section class="hero-vivo" style="position: relative;">
     <div class="hero-overlay"></div>
     <div class="hero-content text-center my-4">
@@ -49,9 +80,15 @@
     </div>
 
     <div class="d-flex justify-content-center mb-4">
-      <button id="abiBtn" class="btn btn-outline-info mx-2" style="font-size:22px;font-weight:600;">ABI</button>
-      <button id="telBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">TEL</button>
-      <button id="spiBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">SPI</button>
+      <div>
+        <button id="abiBtn" class="btn btn-outline-info mx-2" style="font-size:22px;font-weight:600;">ABI</button>
+        <button id="telBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">TEL</button>
+        <button id="spiBtn" class="btn btn-outline-dark mx-2" style="font-size:22px;font-weight:600;">SPI</button>
+      </div>
+      <div>
+        <button id="huntersBtn" class="btn btn-outline-warning mx-2" style="font-size:22px;font-weight:600;">HUNTERS</button>
+        <button id="cidadesBtn" class="btn btn-outline-primary mx-2" style="font-size:22px;font-weight:600;">TABELA ESPECIAIS</button>
+      </div>
     </div>
 
     <div class="search-card p-3 bg-none position-relative">
@@ -75,6 +112,16 @@
           <button id="exportCausas" class="btn btn-info w-100" style="font-size:25px;font-weight:450;">Exportar Causas</button>
         </div>
       </div>
+    </div>
+
+
+
+
+    <div class="table-container bg-white rounded shadow-sm p-3 overflow-auto mt-3" id="cidadesTableContainer" style="display:none;">
+      <table id="cidadesTable" class="table table-striped table-bordered nowrap" style="width:100%">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
     </div>
 
 
@@ -108,10 +155,12 @@
     <option value="Transmissão">Transmissão</option>
     <option value="Software">Software</option>
     <option value="Implantação">Implantação</option>
+    <option value="Desmobilizado">Desmobilizado</option>
     <option value="Outro">Outro</option>
   </select>
   <textarea class="form-control mt-2 auto-resize" id="causaOutro1" placeholder="Descreva a causa" style="display:none;" rows="1"></textarea>
-  
+  <label class="form-label">✅ Ação Realizada 1</label>
+  <textarea class="form-control auto-resize" id="solucaoInput1" rows="1"></textarea>
 </div><br>
 
 
@@ -128,9 +177,12 @@
     <option value="Transmissão">Transmissão</option>
     <option value="Software">Software</option>
     <option value="Implantação">Implantação</option>
+    <option value="Desmobilizado">Desmobilizado</option>
     <option value="Outro">Outro</option>
   </select>
   <textarea class="form-control mt-2 auto-resize" id="causaOutro2" placeholder="Descreva a causa" style="display:none;" rows="1"></textarea>
+  <label class="form-label">✅ Ação Realizada 2</label>
+  <textarea class="form-control auto-resize" id="solucaoInput2" rows="1"></textarea>
 </div><br>
 
 <div class="mb-2">
@@ -146,16 +198,14 @@
     <option value="Transmissão">Transmissão</option>
     <option value="Software">Software</option>
     <option value="Implantação">Implantação</option>
+    <option value="Desmobilizado">Desmobilizado</option>
     <option value="Outro">Outro</option>
   </select>
   <textarea class="form-control mt-2 auto-resize" id="causaOutro3" placeholder="Descreva a causa" style="display:none;" rows="1"></textarea>
+  <label class="form-label">✅ Ação Realizada 3</label>
+  <textarea class="form-control auto-resize" id="solucaoInput3" rows="1"></textarea>
 </div>
 
-
-<div class="mb-2">
-  <label class="form-label">✅ Ação Realizada</label>
-  <textarea class="form-control auto-resize" id="solucaoInput" rows="1"></textarea>
-</div>
 <div class="mb-2">
   <label class="form-label">🧑‍💼 Responsável</label>
   <textarea class="form-control auto-resize" id="responsavelInput" rows="1"></textarea>
@@ -175,51 +225,117 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
-    function fetchWithCache(url, cacheKey, cacheDuration) {
-      const cachedData = localStorage.getItem(cacheKey);
-      const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
-      const now = Date.now();
-
-      if (cachedData && cacheTimestamp && (now - cacheTimestamp < cacheDuration * 1000)) {
-        return Promise.resolve(JSON.parse(cachedData));
-      }
-
-      return fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          localStorage.setItem(cacheKey, JSON.stringify(data));
-          localStorage.setItem(`${cacheKey}_timestamp`, now);
-          return data;
-        });
-    }
     let dadosDisponibilidade = [];
     let dadosSitesBairro = [];
     let currentMonths = [];
     let table;
     let filtroDddPorBotao = false;
+    let hunterActive = false;
     let headCols = [];
+    let cidadesData = [];
+    
 
-    localStorage.removeItem('dadosDisponibilidade');
-    localStorage.removeItem('dadosDisponibilidade_timestamp');
-    localStorage.removeItem('dadosSitesBairro');
-    localStorage.removeItem('dadosSitesBairro_timestamp');
+    function getCriticalColor(percent, max) {
+  // percent: 0 (verde) a max (vermelho)
+  // Verde: #27ae60 (39,174,96), Vermelho: #e74c3c (231,76,60)
+  const p = Math.max(0, Math.min(max, percent));
+  const ratio = max > 0 ? p / max : 0;
+  const r = Math.round(39 + (231 - 39) * ratio);
+  const g = Math.round(174 + (76 - 174) * ratio);
+  const b = Math.round(96 + (60 - 96) * ratio);
+  return `rgb(${r},${g},${b})`;
+}
 
-    Promise.all([
-      fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json', 'dadosDisponibilidade', 3600).then(d => dadosDisponibilidade = d),
-      fetchWithCache('https://grupotel-web.github.io/RElTUExPVkVMA/sites.json', 'dadosSitesBairro', 3600).then(d => dadosSitesBairro = d)
-    ]).then(() => {
-      window.siteExtraMap = {};
-      dadosSitesBairro.forEach(site => {
-        if (site.Site) {
-          const key = String(site.Site).trim().toUpperCase();
-          window.siteExtraMap[key] = site;
-        }
-      });
-      initializeTable();
-      setupFilters();
-      setupActions();
-      setupAdvancedFilters();
-    }).catch(err => console.error(err));
+function renderCidadesTable(dddFilter = null, exceto = false) {
+  if (!cidadesData.length) return;
+  const keys = Object.keys(cidadesData[0]);
+  let filtered = cidadesData;
+  if (dddFilter !== null) {
+    filtered = cidadesData.filter(row => {
+      const cidade = (row.CIDADES || '').toUpperCase();
+      if (exceto) return cidadeToDDD[cidade] && cidadeToDDD[cidade] !== dddFilter;
+      return cidadeToDDD[cidade] === dddFilter;
+    });
+  }
+  const critIdx = keys.indexOf('% Crítico');
+  // Calcula o valor máximo da coluna "% Crítico"
+  let maxCrit = 0;
+  filtered.forEach(row => {
+    let val = row['% Crítico'] || '';
+    if (typeof val === 'string' && val.includes('%')) {
+      const num = parseFloat(val.replace('%', '').replace(',', '.'));
+      if (!isNaN(num) && num > maxCrit) maxCrit = num;
+    }
+  });
+  let thead = '<tr>' + keys.map(k => `<th>${k}</th>`).join('') + '</tr>';
+  let tbody = filtered.map(row => {
+    return '<tr>' + keys.map((k, idx) => {
+      let val = row[k] || '';
+      if (idx === critIdx && typeof val === 'string' && val.includes('%')) {
+        const num = parseFloat(val.replace('%', '').replace(',', '.'));
+        const bg = getCriticalColor(num, maxCrit);
+        return `<td style="background:${bg};color:#fff;">${val}</td>`;
+      }
+      return `<td>${val}</td>`;
+    }).join('') + '</tr>';
+  }).join('');
+  $('#cidadesTable thead').html(thead);
+  $('#cidadesTable tbody').html(tbody);
+}
+
+fetch('https://grupotel-web.github.io/RElTUExPVkVMA/muniespecial.json')
+  .then(res => res.json())
+  .then(json => { cidadesData = json; });
+
+$('#cidadesBtn').on('click', function () {
+  const isCidadesVisible = $('#cidadesTableContainer').is(':visible');
+  if (isCidadesVisible) {
+    $('#cidadesTableContainer').hide();
+    $('#oltTable').closest('.table-container').show();
+  } else {
+    renderCidadesTable();
+    $('#oltTable').closest('.table-container').hide();
+    $('#cidadesTableContainer').show();
+  }
+});
+
+
+
+    function startDashboard() {
+  localStorage.removeItem('dadosDisponibilidade');
+  localStorage.removeItem('dadosDisponibilidade_timestamp');
+  localStorage.removeItem('dadosSitesBairro');
+  localStorage.removeItem('dadosSitesBairro_timestamp');
+
+  Promise.all([
+  fetch('https://grupotel-web.github.io/RElTUExPVkVMA/dados.json').then(res => res.json()).then(d => dadosDisponibilidade = d),
+  fetch('https://grupotel-web.github.io/RElTUExPVkVMA/sites.json').then(res => res.json()).then(d => dadosSitesBairro = d)
+]).then(() => {
+    window.siteExtraMap = {};
+    dadosSitesBairro.forEach(site => {
+      if (site.Site) {
+        const key = String(site.Site).trim().toUpperCase();
+        window.siteExtraMap[key] = site;
+      }
+    });
+
+    // FILTRO POR EMPRESA
+    const empresa = localStorage.getItem("empresaUsuario");
+    if (empresa === "ABILITY") {
+      dadosDisponibilidade = dadosDisponibilidade.filter(item => String(item.DDD).trim() === "11");
+      dadosSitesBairro = dadosSitesBairro.filter(item => String(item.DDD).trim() === "11");
+    } else if (empresa === "TEL") {
+      dadosDisponibilidade = dadosDisponibilidade.filter(item => String(item.DDD).trim() !== "11");
+      dadosSitesBairro = dadosSitesBairro.filter(item => String(item.DDD).trim() !== "11");
+    }
+    // VIVO vê tudo
+
+    initializeTable();
+    setupFilters();
+    setupActions();
+    setupAdvancedFilters();
+  }).catch(err => console.error(err));
+}
 
     function formatCell(value, rowIdx, colKey, colDisplay, site) {
   if (value == null || value === '') return `<td class="date-cell" data-row="${rowIdx}" data-colkey="${colKey}" data-coldisplay="${colDisplay}" data-site="${site}" style="cursor:pointer;"></td>`;
@@ -288,9 +404,61 @@ return keys.map(m => {
 }
 
 
+const municipiosHunter = [
+  "CAMPINAS",
+  "RIBEIRÃO PRETO",
+  "SÃO JOSÉ DOS CAMPOS",
+  "SOROCABA",
+  "SÃO JOSÉ DO RIO PRETO",
+  "BAURU",
+  "JUNDIAÍ",
+  "PIRACICABA",
+  "FRANCA",
+  "PRESIDENTE PRUDENTE",
+  "VINHEDO",
+  "VALINHOS",
+  "ITU",
+  "SÃO ROQUE",
+  "ITATIBA",
+  "BRAGANÇA PAULISTA",
+  "ATIBAIA",
+  "ARAÇOIABA DA SERRA",
+  "ARARAQUARA",
+  "TAUBATÉ",
+  "SÃO CARLOS",
+  "INDAIATUBA",
+  "AMERICANA",
+  "OSASCO",
+  "COTIA",
+  "BARUERI",
+  "SANTANA DE PARNAÍBA"
+];
 
+function applyHunterFilter() {
+  if (!table) return;
+  $.fn.dataTable.ext.search = $.fn.dataTable.ext.search.filter(f => !f._hunter); // Remove filtro hunter antigo
 
+  if (hunterActive) {
+    const hunterSet = new Set(municipiosHunter.map(m => m.toUpperCase()));
+    const muniIdx = headCols.findIndex(c => c === 'MUNICIPIO');
+    const hunterFilter = function(settings, data, dataIndex) {
+      const cell = table.cell(dataIndex, muniIdx).node();
+      const municipio = $(cell).data('municipio') || '';
+      return hunterSet.has(String(municipio).trim().toUpperCase());
+    };
+    hunterFilter._hunter = true;
+    $.fn.dataTable.ext.search.push(hunterFilter);
+  }
+  table.draw();
+}
 
+function setupHunterButton() {
+  $('#huntersBtn').off('click').on('click', function () {
+    hunterActive = !hunterActive;
+    $(this).toggleClass('selected-btn-hunter', hunterActive);
+    applyHunterFilter();
+  });
+}
 
 function initializeTable() {
   const today = new Date();
@@ -349,7 +517,14 @@ function initializeTable() {
   dadosDisponibilidade.forEach((it, rowIdx) => {
     html += '<tr>';
     html += `<td>${it['DDD'] || ''}</td>`;
-    html += `<td>${it['MUNICIPIO'] || ''}</td>`;
+
+    // Adiciona estrelinha se for município hunter
+    let municipio = it['MUNICIPIO'] || '';
+let municipioDisplay = municipio;
+if (municipiosHunter.includes(String(municipio).trim().toUpperCase())) {
+  municipioDisplay = '⭐ ' + municipio;
+}
+html += `<td data-municipio="${municipio}">${municipioDisplay}</td>`;
 
     // Adiciona os valores de "Qtd Bairros" e "Parque"
     let siteKey = String(it['SITE'] || '').trim().toUpperCase();
@@ -414,6 +589,7 @@ function initializeTable() {
   addCausaIndicators();
 
   table = $('#oltTable').DataTable({
+    deferRender: true,
     paging: true,
     pageLength: 20,
     ordering: true,
@@ -483,47 +659,50 @@ function initializeTable() {
   });
 }
 
-  function updateCards() {
-      if (!dadosSitesBairro || !dadosDisponibilidade) {
-        console.error('Dados indisponíveis para atualizar os cartões.');
-        return;
-      }
+// Substitua a chamada de updateCards() por esta versão assíncrona:
+async function updateCards() {
+  if (!dadosSitesBairro || !dadosDisponibilidade) {
+    console.error('Dados indisponíveis para atualizar os cartões.');
+    return;
+  }
 
-      const bairroSet = new Set(dadosSitesBairro.map(s => s.Site));
-      const filtered = dadosDisponibilidade.filter(i => bairroSet.has(i.SITE));
-      const total = filtered.length;
+  const bairroSet = new Set(dadosSitesBairro.map(s => s.Site));
+  const filtered = dadosDisponibilidade.filter(i => bairroSet.has(i.SITE));
+  const total = filtered.length;
 
-  const mesAtual = currentMonths.at(-1)?.toLowerCase();
+  const mesAtual = currentMonths.at(-1);
   const crit2ColName = headCols.find(c =>
-  c.toLowerCase().includes('criticidade') &&
-  c.toLowerCase().includes(mesAtual)
-);
- 
+    c.toLowerCase().includes('criticidade') &&
+    c.toLowerCase().includes((mesAtual || '').toLowerCase())
+  );
 
   let crit = 0, alert = 0, nonc = 0;
+  let totalBairro = 0;
   filtered.forEach(i => {
     const val = i[crit2ColName];
     if (val === 'Crítico') crit++;
     else if (val === 'Alerta') alert++;
     else nonc++;
+    totalBairro++;
   });
 
   $('#totalSitesCard').text(`Total de Sites: ${dadosDisponibilidade.length}`);
-  $('#sitesBairroCard').text(`Total Sites Bairro: ${total}`);
+  $('#sitesBairroCard').text(`Total Sites Bairro: ${totalBairro}`);
   $('#criticalSitesCard').text(`Sites Críticos: ${crit}`);
   $('#alertSitesCard').text(`Sites em Alerta: ${alert}`);
-   $('#nonCriticalSitesCard').text(`Sites Não Críticos: ${nonc}`);
+  $('#nonCriticalSitesCard').text(`Sites Não Críticos: ${nonc}`);
 }
 
-
-function updateCardsComFiltros() {
+// Faça o mesmo ajuste para updateCardsComFiltros se necessário:
+async function updateCardsComFiltros() {
   if (!table || !dadosSitesBairro) return;
 
   const filteredRows = table.rows({ search: 'applied' }).data().toArray();
 
   const siteIndex = headCols.findIndex(c => c === 'SITE');
   const bairroIndex = headCols.findIndex(c => c === 'Bairros');
-  const siteBairroSet = new Set(dadosSitesBairro.map(s => s.Site));
+  const siteBairroSet = new Set(dadosSitesBairro.map(s => String(s.Site).trim().toUpperCase()));
+  const mesAtual = currentMonths.at(-1);
 
   let total = filteredRows.length;
   let totalBairro = 0;
@@ -532,12 +711,12 @@ function updateCardsComFiltros() {
   filteredRows.forEach(row => {
     const site = $('<div>').html(row[siteIndex]).text().trim();
     const bairro = $('<div>').html(row[bairroIndex]).text().trim();
-    if (siteBairroSet.has(site)) totalBairro++;
+    if (siteBairroSet.has(site.toUpperCase())) totalBairro++;
     if (bairro && bairro !== '-') bairrosUnicos.add(bairro); // Ignora valores "-"
   });
 
   $('#totalSitesCard').text(`Total de Sites: ${total}`);
-  $('#sitesBairroCard').text(`Total Sites Bairro: ${totalBairro} / ${bairrosUnicos.size}`);
+  $('#sitesBairroCard').text(`Sites: ${totalBairro} / Bairro: ${bairrosUnicos.size}`);
 }
 
 
@@ -788,44 +967,55 @@ $('#clearFilters').on('click', () => {
   $('#exportCausas').on('click', async () => {
   const rows = table.rows({ search: 'applied' }).nodes().toArray();
   const exportData = [];
+  if (!rows.length) return;
 
-  if (!rows.length) {
-    return;
-  }
+  const siteIdx = headCols.findIndex(c => c === 'SITE');
+  const muniIdx = headCols.findIndex(c => c === 'MUNICIPIO');
 
   for (let i = 0; i < rows.length; i++) {
     const tds = $(rows[i]).find('td');
-    const site = $(tds[5]).text().trim();
-    const rowIdx = $(tds[0]).closest('tr').index();
-    const rowData = dadosDisponibilidade[rowIdx];
-
-    if (!site || !rowData) {
-      continue;
-    }
+    const site = $(tds[siteIdx]).text().trim();
+    const municipio = $(tds[muniIdx]).text().trim();
+    const rowData = dadosDisponibilidade.find(r => String(r.SITE).trim() === site);
+    if (!site || !rowData) continue;
 
     for (const month of currentMonths) {
       const colKey = month;
-      const id = btoa(`${site.trim()}|${colKey.trim()}`);
-
+      const id = btoa(`${site}|${colKey}`);
       try {
         const snap = await db.ref('dispmovel/' + id).once('value');
         const val = snap.val();
-
-        if (val && (val.causa1 || val.causa2 || val.causa3 || val.solucao)) {
+        // Compatibilidade retroativa para solucao1
+        const solucao1 = (val && (val.solucao1 || val.solucao || '')) || '';
+        const solucao2 = (val && val.solucao2) || '';
+        const solucao3 = (val && val.solucao3) || '';
+        // Só exporta se houver pelo menos uma causa ou ação preenchida
+        if (
+          val &&
+          (
+            (val.causa1 && val.causa1.trim() !== '') ||
+            (val.causa2 && val.causa2.trim() !== '') ||
+            (val.causa3 && val.causa3.trim() !== '') ||
+            (solucao1 && solucao1.trim() !== '') ||
+            (solucao2 && solucao2.trim() !== '') ||
+            (solucao3 && solucao3.trim() !== '')
+          )
+        ) {
           exportData.push({
             SITE: site,
-            MUNICIPIO: rowData['MUNICIPIO'] || '',
+            MUNICIPIO: municipio,
             MÊS: colKey,
             DISPONIBILIDADE: rowData[colKey] || '',
-            CAUSA_1: val.causa1 || '',
-            CAUSA_2: val.causa2 || '',
-            CAUSA_3: val.causa3 || '',
-            AÇÃO_REALIZADA: val.solucao || '',
+            'CAUSA 1': val.causa1 || '',
+            'AÇÃO REALIZADA 1': solucao1,
+            'CAUSA 2': val.causa2 || '',
+            'AÇÃO REALIZADA 2': solucao2,
+            'CAUSA 3': val.causa3 || '',
+            'AÇÃO REALIZADA 3': solucao3,
             RESPONSÁVEL: val.responsavel || ''
           });
         }
-      } catch (err) {
-      }
+      } catch (err) {}
     }
   }
 
@@ -839,7 +1029,6 @@ $('#clearFilters').on('click', () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Causas');
   XLSX.writeFile(workbook, 'Causas_Com_Disponibilidade.xlsx');
 });
-
 
 
 headCols = headCols.map(c => c.replace(/\s*▼$/, '').trim());
@@ -903,6 +1092,9 @@ function cardFilter(id, crit, showAll = false) {
   const disponibilidade = rowData[colKey]; 
   const id = btoa(`${rowData['SITE']}|${colKey}`);
 
+  const nomeUsuario = localStorage.getItem("nomeUsuario") || "";
+  $('#responsavelInput').val(nomeUsuario);
+
   // Cor conforme disponibilidade
   let disponibilidadeColor = '';
   const n = parseFloat(disponibilidade.toString().replace(',', '.'));
@@ -942,36 +1134,39 @@ function cardFilter(id, crit, showAll = false) {
 
   // Preenche dados do Firebase
   db.ref('dispmovel/' + id).once('value').then(snap => {
-    const val = snap.val() || {};
+  const val = snap.val() || {};
 
-    function setCausaSelect(num, value) {
-      const select = $(`#causaInput${num}`);
-      const outro = $(`#causaOutro${num}`);
-      const options = Array.from(select[0].options).map(opt => opt.value);
-      if (value && !options.includes(value)) {
-        select.val('Outro');
-        outro.val(value).show();
-      } else {
-        select.val(value || '');
-        outro.val('').hide();
-      }
+  function setCausaSelect(num, value) {
+    const select = $(`#causaInput${num}`);
+    const outro = $(`#causaOutro${num}`);
+    const options = Array.from(select[0].options).map(opt => opt.value);
+    if (value && !options.includes(value)) {
+      select.val('Outro');
+      outro.val(value).show();
+    } else {
+      select.val(value || '');
+      outro.val('').hide();
     }
-    setCausaSelect(1, val.causa1);
-    setCausaSelect(2, val.causa2);
-    setCausaSelect(3, val.causa3);
+  }
+  setCausaSelect(1, val.causa1);
+  setCausaSelect(2, val.causa2);
+  setCausaSelect(3, val.causa3);
 
-    $('#solucaoInput').val(val.solucao || '');
-    $('#responsavelInput').val(val.responsavel || '');
-    $('#editModal').css('display', 'flex');
+  // Compatibilidade retroativa para solucao1
+  $('#solucaoInput1').val(val.solucao1 || val.solucao || '');
+  $('#solucaoInput2').val(val.solucao2 || '');
+  $('#solucaoInput3').val(val.solucao3 || '');
+  $('#responsavelInput').val(val.responsavel || '');
+  $('#editModal').css('display', 'flex');
 
-    // Força ajuste do tamanho dos textareas
-    setTimeout(() => {
-      document.querySelectorAll('textarea.auto-resize').forEach(el => {
-        el.style.height = 'auto';
-        el.style.height = `${el.scrollHeight}px`;
-      });
-    }, 0);
-  });
+  // Força ajuste do tamanho dos textareas
+  setTimeout(() => {
+    document.querySelectorAll('textarea.auto-resize').forEach(el => {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    });
+  }, 0);
+});
 
   // Evento do botão 🗑️
   $('#limparCausaBtn').off('click').on('click', function () {
@@ -988,34 +1183,36 @@ function cardFilter(id, crit, showAll = false) {
     $('#closeModalBtn').on('click', () => $('#editModal').hide());
 
     $('#editForm').on('submit', function(e) {
-      e.preventDefault();
-      if (!currentEdit) return;
-      const { rowData, colKey, cellElem } = currentEdit;
-      const id = btoa(`${rowData['SITE']}|${colKey}`);
+  e.preventDefault();
+  if (!currentEdit) return;
+  const { rowData, colKey, cellElem } = currentEdit;
+  const id = btoa(`${rowData['SITE']}|${colKey}`);
 
-      function getCausaValue(num) {
-        const select = $(`#causaInput${num}`);
-        const outro = $(`#causaOutro${num}`);
-        if (select.val() === 'Outro') {
-          return outro.val() || 'Outro';
-        }
-        return select.val();
-      }
+  function getCausaValue(num) {
+    const select = $(`#causaInput${num}`);
+    const outro = $(`#causaOutro${num}`);
+    if (select.val() === 'Outro') {
+      return outro.val() || 'Outro';
+    }
+    return select.val();
+  }
 
-      const data = {
-        causa1: getCausaValue(1),
-        causa2: getCausaValue(2),
-        causa3: getCausaValue(3),
-        solucao: $('#solucaoInput').val(),
-        responsavel: $('#responsavelInput').val()
-      };
-      db.ref('dispmovel/' + id).set(data, err => {
-        if (!err) {
-          $('#modalMsg').show().delay(1200).fadeOut();
-          $(cellElem).attr('data-hasinfo', '1');
-        }
-      });
-    });
+  const data = {
+    causa1: getCausaValue(1),
+    causa2: getCausaValue(2),
+    causa3: getCausaValue(3),
+    solucao1: $('#solucaoInput1').val(),
+    solucao2: $('#solucaoInput2').val(),
+    solucao3: $('#solucaoInput3').val(),
+    responsavel: $('#responsavelInput').val()
+  };
+  db.ref('dispmovel/' + id).set(data, err => {
+    if (!err) {
+      $('#modalMsg').show().delay(1200).fadeOut();
+      $(cellElem).attr('data-hasinfo', '1');
+    }
+  });
+});
     $('#editBtn').on('click', function(){
       const inputs = $('#causaInput1, #causaInput2, #causaInput3, #solucaoInput, #responsavelInput');
       const isDisabled = inputs.prop('disabled');
@@ -1055,29 +1252,6 @@ function cardFilter(id, crit, showAll = false) {
     });
   });
 
-
-  document.addEventListener('DOMContentLoaded', function () {
-    let nomeUsuario = localStorage.getItem("nomeUsuario");
-
-    if (!nomeUsuario) {
-      const agente = navigator.userAgent;
-      console.log("Navegador e sistema detectados:", agente); 
-
-      nomeUsuario = prompt("Digite seu nome (isso será salvo no navegador):");
-      if (nomeUsuario) {
-        localStorage.setItem("nomeUsuario", nomeUsuario);
-      }
-    }
-
-    document.getElementById('editBtn').addEventListener('click', () => {
-      const input = document.getElementById('responsavelInput');
-      input.disabled = false;
-
-      if (nomeUsuario) {
-        input.value = nomeUsuario;
-      }
-    });
-  });
 
   document.addEventListener('input', function (event) {
     if (event.target.classList.contains('auto-resize')) {
@@ -1158,10 +1332,10 @@ $('#spiBtn').off('click').on('click', function () {
 
 // Chame após a tabela ser inicializada
 $(document).ready(function() {
-  // Aguarda a tabela ser criada
   const interval = setInterval(function() {
     if (typeof table !== 'undefined' && table) {
       setupAbiTelButtons();
+      setupHunterButton(); // <-- Adicione esta linha
       clearInterval(interval);
     }
   }, 200);
@@ -1184,6 +1358,58 @@ $(document).ready(function() {
       document.getElementById('updateInfo').textContent = `Erro ao obter atualização`;
       console.error('Erro ao buscar cabeçalho do JSON:', err);
     });
+
+
+    function getUserData() {
+  return {
+    nome: localStorage.getItem("nomeUsuario"),
+    numero: localStorage.getItem("numeroUsuario"),
+    email: localStorage.getItem("emailUsuario"),
+    empresa: localStorage.getItem("empresaUsuario")
+  };
+}
+function isUserDataValid(data) {
+  return data.nome && data.numero && data.email && data.empresa;
+}
+function showUserModal() {
+  document.getElementById('userModal').style.display = 'flex';
+}
+function hideUserModal() {
+  document.getElementById('userModal').style.display = 'none';
+}
+document.addEventListener('DOMContentLoaded', function () {
+  const userData = getUserData();
+  if (!isUserDataValid(userData)) {
+    showUserModal();
+  } else {
+    hideUserModal();
+    startDashboard(); // Só inicia se já tem usuário
+  }
+  document.getElementById('userForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const nome = document.getElementById('userNome').value.trim();
+    const numero = document.getElementById('userNumero').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const empresa = document.getElementById('userEmpresa').value;
+    if (nome && numero && email && empresa) {
+      localStorage.setItem("nomeUsuario", nome);
+      localStorage.setItem("numeroUsuario", numero);
+      localStorage.setItem("emailUsuario", email);
+      localStorage.setItem("empresaUsuario", empresa);
+      hideUserModal();
+      startDashboard(); // Só inicia após preencher o modal
+    }
+  });
+  // Impede fechar o modal por ESC ou clique fora
+  document.getElementById('userModal').addEventListener('click', function(e){
+    if(e.target === this) e.stopPropagation();
+  });
+  window.addEventListener('keydown', function(e){
+    if(document.getElementById('userModal').style.display === 'flex' && (e.key === "Escape" || e.key === "Esc")) {
+      e.preventDefault();
+    }
+  });
+});
 </script>
 </body>
 </html>
