@@ -149,6 +149,7 @@ body {
   color: none;
   background: none;
   transition: border 0.2s;
+  width: 500px;
 }
 .search-card .form-control:focus {
   border: none;
@@ -180,8 +181,8 @@ body {
   font-size: 1.1rem;
   font-weight: 600;
   padding: 0;
-  min-width: 220px;
-  max-height: 260px;
+  min-width: 280px;
+  max-height: 280px;
   overflow-y: auto;
   display: none;
 }
@@ -237,6 +238,12 @@ table.dataTable tbody tr {
   box-shadow: 0 1px 2px rgba(44, 104, 25, 0.03);
   transition: background 0.2s;
 }
+
+#muniFilterInput {
+  width: 350px; /* ajuste conforme necessário */
+  max-width: 100%;
+}
+
 table.dataTable tbody tr:nth-child(even) {
   background: #f5f7fa;
 }
@@ -706,4 +713,44 @@ textarea.auto-resize {
     font-size: 1.1rem;
     padding: 10px 6px;
   }
+}
+
+.export-btn {
+  min-width: 280px;
+  max-width: 280px;
+  width: 280px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+.switch input {display:none;}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #337031;
+}
+input:not(:checked) + .slider {
+  background-color: #e74c3c;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
 }
