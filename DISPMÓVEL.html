@@ -93,12 +93,6 @@
 
     <div class="search-card p-3 bg-none position-relative">
       <div class="row g-2 justify-content-end align-items-center">
-        <!-- <div class="col-auto" id="favoriteFilterCol" style="display:none;">
-          <button id="favoriteFilterBtn" class="btn btn-outline-primary export-btn" title="Salvar filtro atual como favorito" style="font-size:25px;font-weight:450;">
-            ⭐ Favoritar Filtro
-          </button>
-        </div>
-        <div class="col-auto" id="favoriteFiltersBtnsCol" style="display:flex;gap:8px;align-items:center;"></div> -->
         <div class="col-auto">
           <button id="clearFilters" class="btn btn-secondary export-btn" style="font-size:25px;font-weight:450;">Limpar</button>
         </div>
@@ -236,6 +230,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <script>
     let dadosDisponibilidade = [];
     let dadosSitesBairro = [];
@@ -247,144 +242,6 @@
     let cidadesData = [];
     
     
-//     function isAnyFilterActive() {
-//   if (!table) return false;
-//   if (table.search()) return true;
-//   for (let i = 0; i < table.columns().count(); i++) {
-//     if (table.column(i).search()) return true;
-//   }
-//   return false;
-// }
-
-// function renderFavoriteFilterButtons() {
-//   const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
-//   const col = $('#favoriteFiltersBtnsCol');
-//   col.empty();
-//   saved.forEach((f, idx) => {
-//     const btn = $(`
-//       <button class="btn btn-outline-primary export-btn favorite-filter-btn" style="position:relative;font-size:25px;font-weight:450;margin-right:4px;">
-//         ${f.name}
-//         <span class="remove-fav-filter" data-idx="${idx}" 
-//           style="
-//             position:absolute;
-//             top:8px;
-//             right:6px;
-//             width:28px;
-//             height:28px;
-//             display:flex;
-//             align-items:center;
-//             justify-content:center;
-//             background:#e74c3c;
-//             color:#fff;
-//             font-size:1.3em;
-//             border-radius:50%;
-//             cursor:pointer;
-//             transition: background 0.2s;
-//             z-index:2;
-//             box-shadow:0 1px 4px #0002;
-//           " 
-//           onmouseover="this.style.background='#c0392b'"
-//           onmouseout="this.style.background='#e74c3c'"
-//         >&times;</span>
-//       </button>
-//     `);
-//     btn.on('click', function(e) {
-//       if ($(e.target).hasClass('remove-fav-filter')) return;
-//       applyFavoriteFilter(idx);
-//     });
-//     btn.find('.remove-fav-filter').on('click', function(e) {
-//       e.stopPropagation();
-//       removeFavoriteFilter(idx);
-//     });
-//     col.append(btn);
-//   });
-// }
-
-// function saveFavoriteFilter() {
-//   let name = '';
-//   while (true) {
-//     name = prompt('Digite um nome para este filtro (máx. 17 caracteres):');
-//     if (!name) return;
-//     name = name.trim();
-//     if (name.length <= 17) break;
-//     alert('O nome do filtro deve ter no máximo 17 caracteres.');
-//   }
-//   const filterState = {
-//     name,
-//     search: table.search(),
-//     columns: [],
-//     filtroDddPorBotao
-//   };
-//   for (let i = 0; i < table.columns().count(); i++) {
-//     filterState.columns.push(table.column(i).search());
-//   }
-//   const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
-//   saved.push(filterState);
-//   localStorage.setItem('savedFilters', JSON.stringify(saved));
-//   renderFavoriteFilterButtons();
-//   alert('Filtro salvo!');
-// }
-
-// function applyFavoriteFilter(idx) {
-//   const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
-//   const filter = saved[idx];
-//   if (!filter) return;
-
-//   // Limpa todos os filtros antes de aplicar o favorito
-//   table.search('');
-//   for (let i = 0; i < table.columns().count(); i++) {
-//     table.column(i).search('');
-//   }
-
-//   // Aplica os filtros do favorito
-//   table.search(filter.search || '');
-//   filter.columns.forEach((s, i) => table.column(i).search(s || ''));
-//   filtroDddPorBotao = !!filter.filtroDddPorBotao;
-//   table.draw();
-// }
-
-// // Corrija o botão Limpar para limpar tudo corretamente
-// $('#clearFilters').on('click', () => {
-//   table.search(''); // limpa filtro global
-
-//   table.columns().every(function (colIdx) {
-//     this.search('');
-//   });
-
-//   filtroDddPorBotao = false;
-
-//   table.order([5, 'asc']).draw();
-
-//   $('.filter-btn').removeClass('filtered');
-//   $('.filter-checkbox, .select-all-checkbox').prop('checked', false);
-//   $('.dropdown-list').removeClass('active');
-//   updateFavoriteFilterBtn();
-// });
-
-// function removeFavoriteFilter(idx) {
-//   let saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
-//   saved.splice(idx, 1);
-//   localStorage.setItem('savedFilters', JSON.stringify(saved));
-//   renderFavoriteFilterButtons();
-// }
-
-// $('#favoriteFilterBtn').off('click').on('click', saveFavoriteFilter);
-
-// function updateFavoriteFilterBtn() {
-//   if (isAnyFilterActive()) {
-//     $('#favoriteFilterCol').show();
-//   } else {
-//     $('#favoriteFilterCol').hide();
-//   }
-//   renderFavoriteFilterButtons();
-// }
-
-// // Inicialize ao carregar:
-// $(document).ready(function () {
-//   renderFavoriteFilterButtons();
-//   updateFavoriteFilterBtn();
-// });
-
 // Atualiza visibilidade do botão ao mudar filtros
 if (typeof table !== 'undefined') {
   table.on('search.dt column-search.dt draw', updateFavoriteFilterBtn);
@@ -398,8 +255,6 @@ $(document).ready(function () {
 
 
     function getCriticalColor(percent, max) {
-  // percent: 0 (verde) a max (vermelho)
-  // Verde: #27ae60 (39,174,96), Vermelho: #e74c3c (231,76,60)
   const p = Math.max(0, Math.min(max, percent));
   const ratio = max > 0 ? p / max : 0;
   const r = Math.round(39 + (231 - 39) * ratio);
@@ -420,7 +275,6 @@ function renderCidadesTable(dddFilter = null, exceto = false) {
     });
   }
   const critIdx = keys.indexOf('% Crítico');
-  // Calcula o valor máximo da coluna "% Crítico"
   let maxCrit = 0;
   filtered.forEach(row => {
     let val = row['% Crítico'] || '';
@@ -940,7 +794,7 @@ async function updateCardsComFiltros() {
 
     
 
-    function setupAdvancedFilters() {
+function setupAdvancedFilters() {
   $('.filter-btn').off('click').on('click', function (e) {
     e.stopPropagation();
     $('.filter-popup, #filterContainer').hide();
@@ -986,11 +840,10 @@ async function updateCardsComFiltros() {
     let filterOptions = $('<div class="filter-options mb-2" style="max-height:180px;overflow:auto;border:1px solid #eee;border-radius:6px;padding:6px;background:#fafbfc;"></div>');
     const values = new Set();
 
-
-table.column(index, { search: 'applied' }).data().each(function (val) {
-  const texto = $('<div>').html(val).text().trim();
-  if (texto) values.add(texto);
-});
+    table.column(index, { search: 'applied' }).data().each(function (val) {
+      const texto = $('<div>').html(val).text().trim();
+      if (texto) values.add(texto);
+    });
 
     [...values].sort().forEach(v => {
       filterOptions.append(`<div><label><input type="checkbox" value="${v}"> ${v}</label></div>`);
@@ -1044,10 +897,16 @@ table.column(index, { search: 'applied' }).data().each(function (val) {
       if (this.checked) popup.find('.filter-empty').prop('checked', false);
     });
 
+    // Permite seleção múltipla das bolinhas de cor
     if (colorFilter) {
       colorFilter.find('.color-dot').on('click', function () {
-        colorFilter.find('.color-dot').removeClass('selected');
-        $(this).addClass('selected');
+        if ($(this).data('color') === 'all') {
+          colorFilter.find('.color-dot').removeClass('selected');
+          $(this).addClass('selected');
+        } else {
+          colorFilter.find('.color-dot[data-color="all"]').removeClass('selected');
+          $(this).toggleClass('selected');
+        }
       });
     }
 
@@ -1056,44 +915,48 @@ table.column(index, { search: 'applied' }).data().each(function (val) {
     sortBtns.find('.sort-clear').on('click', () => table.order([]).draw());
 
     applyButton.on('click', function () {
-  let regex = '';
-  if (popup.find('.filter-empty').prop('checked')) {
-    regex = '^\\s*$';
-  } else if (popup.find('.filter-notempty').prop('checked')) {
-    regex = '^\\s*\\S+';
-  } else {
-    const vals = filterOptions.find('input[type="checkbox"]:checked').map(function () {
-      return '^' + $.fn.dataTable.util.escapeRegex($(this).val()) + '$';
-    }).get();
-    regex = vals.join('|');
-  }
+      let regex = '';
+      if (popup.find('.filter-empty').prop('checked')) {
+        regex = '^\\s*$';
+      } else if (popup.find('.filter-notempty').prop('checked')) {
+        regex = '^\\s*\\S+';
+      } else {
+        const vals = filterOptions.find('input[type="checkbox"]:checked').map(function () {
+          return '^' + $.fn.dataTable.util.escapeRegex($(this).val()) + '$';
+        }).get();
+        regex = vals.join('|');
+      }
 
-  if (colorFilter) {
-    const selectedColor = colorFilter.find('.color-dot.selected').data('color');
-    if (selectedColor && selectedColor !== 'all') {
-      const colorRegex = {
-        darkgreen: '^100$',
-        lightgreen: '(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)',
-        orange: '(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)',
-        red: '(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)'
-      }[selectedColor];
-      regex = regex ? `(?=.*${regex})${colorRegex}` : colorRegex;
-    }
-  }
+      if (colorFilter) {
+        const selectedColors = colorFilter.find('.color-dot.selected').map(function () {
+          return $(this).data('color');
+        }).get().filter(c => c && c !== 'all');
+        if (selectedColors.length > 0) {
+          const colorRegexMap = {
+            darkgreen: '^100$',
+            lightgreen: '(^9[8-9](,\\d\\d)?$|^99(,0{1,2})?$)',
+            orange: '(^9[7](,\\d\\d)?$|^96(,\\d\\d)?$)',
+            red: '(^([0-8]?\\d(,\\d\\d)?|9[0-5](,\\d\\d)?)$)'
+          };
+          const colorRegexes = selectedColors.map(c => colorRegexMap[c]).filter(Boolean);
+          const colorRegex = colorRegexes.join('|');
+          regex = regex ? `(?=.*(${regex}))(${colorRegex})` : `(${colorRegex})`;
+        }
+      }
 
-  table.column(index).search(regex, true, false).draw();
-  popup.hide();
-  updateFavoriteFilterBtn(); // <-- Adicione aqui
-});
+      table.column(index).search(regex, true, false).draw();
+      popup.hide();
+      updateFavoriteFilterBtn();
+    });
 
-clearButton.on('click', function () {
-  table.column(index).search('').draw();
-  filterOptions.find('input[type="checkbox"]').prop('checked', false);
-  popup.find('.filter-empty, .filter-notempty').prop('checked', false);
-  if (colorFilter) colorFilter.find('.color-dot').removeClass('selected');
-  popup.hide();
-  updateFavoriteFilterBtn(); // <-- Adicione aqui
-});
+    clearButton.on('click', function () {
+      table.column(index).search('').draw();
+      filterOptions.find('input[type="checkbox"]').prop('checked', false);
+      popup.find('.filter-empty, .filter-notempty').prop('checked', false);
+      if (colorFilter) colorFilter.find('.color-dot').removeClass('selected');
+      popup.hide();
+      updateFavoriteFilterBtn();
+    });
   });
 
   $(document).off('click.filtroFechamento').on('click.filtroFechamento', function (e) {
