@@ -103,46 +103,19 @@
     </div>
 
     <div id="evolucaoContainer" style="display:none;">
-      <div class="p-4 shadow-sm rounded h-100" style="background: #cacaca;">
-       
-        <div class="dashboard d-flex flex-wrap justify-content-between gap-3 mb-4">
-          <div class="card-container">
-            <div class="dashboard-card bg-danger text-white p-3 rounded flex-grow-1" id="cardCriticosHoje" data-legend="Sites que estão críticos no momento.">Críticos Hoje: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-dark text-white p-3 rounded flex-grow-1" id="cardSegueCritico" data-legend="Sites com dois meses passados ruins no trimestre atual.">Segue Crítico: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-secondary text-white p-3 rounded flex-grow-1" id="cardCritico" data-legend="Sites com um mês passado <96 e o atual <94">Crítico: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-warning text-dark p-3 rounded flex-grow-1" id="cardPodeSair" data-legend="Sites com um mês passado <96 e atualmente entre 94 e 96">Pode Sair: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-info text-white p-3 rounded flex-grow-1" id="cardPodeVirarCritico" data-legend="Sites com do trimestre <96 e atualmente entre 96 e 96.5">Pode Virar Crítico: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-primary text-white p-3 rounded flex-grow-1" id="cardProjetado">Projetado: 0</div>
-          </div>
-        </div>
-        <div class="dashboard d-flex flex-wrap justify-content-between gap-3 mb-4">
-          <div class="card-container">
-            <div class="dashboard-card bg-info text-white p-3 rounded flex-grow-1" id="cardRetrasadoAbaixo96" data-legend="Sites que mês retrasado estavam <96">Retrasado &lt;96: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-primary text-white p-3 rounded flex-grow-1" id="cardRetrasadoSaiuVoltou" data-legend="Sites do mês retrasado <96 com incidencia <96 no mês atual">Retrasado&lt;96 &rarr; Passado&gt;96 &rarr; Atual&lt;96: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-info text-white p-3 rounded flex-grow-1" id="cardPassadoAbaixo96" data-legend="Sites que mês passado estavam <96">Passado &lt;96: 0</div>
-          </div>
-          <div class="card-container">
-            <div class="dashboard-card bg-primary text-white p-3 rounded flex-grow-1" id="cardPassadoSaiuVoltou" data-legend="Sites do mês passado <96 com incidencia <96 no mês atual">Passado&lt;96 &amp; Retrasado&gt;96 &amp; Atual&lt;96: 0</div>
-          </div>
-        </div>
-        <h6 class="mb-25 text-center" style="font-size: 35px;">📊 Qtd Sites Criticos (Dia)</h6>
+    <div class="p-4 shadow-sm rounded h-100" style="background: #cacaca;">
+      <div class="dashboard d-flex flex-wrap justify-content-between gap-3 mb-4">
+        <div class="dashboard-card bg-danger text-white p-3 rounded flex-grow-1" id="cardCriticosHoje">Críticos Hoje: 0</div>
+        <div class="dashboard-card bg-dark text-white p-3 rounded flex-grow-1" id="cardSegueCritico">Segue Crítico: 0</div>
+        <div class="dashboard-card bg-secondary text-white p-3 rounded flex-grow-1" id="cardCritico">Crítico: 0</div>
+        <div class="dashboard-card bg-warning text-dark p-3 rounded flex-grow-1" id="cardPodeSair">Pode Sair: 0</div>
+        <div class="dashboard-card bg-info text-white p-3 rounded flex-grow-1" id="cardPodeVirarCritico">Pode Virar Crítico: 0</div>
+        <div class="dashboard-card bg-primary text-white p-3 rounded flex-grow-1" id="cardProjetado">Projetado: 0</div>
+      </div>
+           <h6 class="mb-25 text-center" style="font-size: 35px;">📊 Qtd Sites Criticos (Dia)</h6>
         <div style="display: flex; gap: 0px; justify-content: center; align-items: flex-start;">
           <canvas id="graficoEvolucao" width="3400" height="800"></canvas>
-        </div>
+                </div>
       </div>
     </div>
     
@@ -428,8 +401,9 @@ $('#cidadesBtn').on('click', function () {
       dadosSitesBairro = dadosSitesBairro.filter(item => String(item.DDD).trim() !== "11");
     }
     // VIVO vê tudo
-    renderDashboardEvolucao();
+
     initializeTable();
+    renderDashboardEvolucao();
     setupFilters();
     setupActions();
     setupAdvancedFilters();
@@ -445,24 +419,34 @@ function salvarCriticosDiario() {
   const ano = hoje.getFullYear();
   const dataStr = `${dia}-${mes}-${ano}`;
 
-  // Salva diário (por dia)
-  const mesAtual = currentMonths.at(-1);
-  const crit2ColName = headCols.find(c =>
-    c.toLowerCase().includes('criticidade') &&
-    c.toLowerCase().includes((mesAtual || '').toLowerCase())
-  );
-  const criticos = dadosDisponibilidade.filter(i =>
-    isSiteBairro(i.SITE) && i[crit2ColName] === 'Crítico'
-  ).length;
-  db.ref('mensal/' + dataStr).set(criticos);
-
-  // Salva mensal (apenas mês atual, igual ao card)
-  const mesAtualNome = (crit2ColName || '').replace(/^.*\s/, ''); // Ex: "Jun/24"
-  const updates = {};
-  updates[mesAtualNome] = criticos;
-  db.ref('mensalMes').update(updates);
+  // NOVO: só salva se o "Atualizado em" for hoje
+  const updateInfo = document.getElementById('updateInfo');
+  if (updateInfo && updateInfo.textContent && updateInfo.textContent.includes('Atualizado em:')) {
+    // Extrai a data do texto
+    const match = updateInfo.textContent.match(/Atualizado em: ([^,]+)/);
+    if (match && match[1]) {
+      // match[1] é a data no formato pt-BR
+      const dataAtualizacao = new Date(match[1]);
+      // Compara só o dia/mês/ano
+      if (
+        dataAtualizacao.getDate() === hoje.getDate() &&
+        dataAtualizacao.getMonth() === hoje.getMonth() &&
+        dataAtualizacao.getFullYear() === hoje.getFullYear()
+      ) {
+        // Só salva se for o mesmo dia
+        const mesAtual = currentMonths.at(-1);
+        const crit2ColName = headCols.find(c =>
+          c.toLowerCase().includes('criticidade') &&
+          c.toLowerCase().includes((mesAtual || '').toLowerCase())
+        );
+        const criticos = dadosDisponibilidade.filter(i =>
+          isSiteBairro(i.SITE) && i[crit2ColName] === 'Crítico'
+        ).length;
+        db.ref('mensal/' + dataStr).set(criticos);
+      }
+    }
+  }
 }
-window.salvarCriticosDiario = salvarCriticosDiario;
 
 
     function formatCell(value, rowIdx, colKey, colDisplay, site) {
@@ -1415,66 +1399,14 @@ $('#cardPodeVirarCritico').off('click').on('click', () => {
 
     const algumMesRuim = (valAnterior < 96) || (valRetrasado < 96);
 
-    // Regra ajustada: valAtual >= 96 && valAtual < 96.5
-    return algumMesRuim && (valAtual >= 96 && valAtual < 96.5);
+    return algumMesRuim && valAtual < 94;
   }).map(s => s.SITE);
 
-  aplicarFiltroNosSites(sites);
-});
-
-
-$('#cardRetrasadoAbaixo96').off('click').on('click', () => {
-  const sites = dadosDisponibilidade.filter(site => {
-    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-    return isSiteBairro(site.SITE) && valRetrasado < 96;
-  }).map(s => s.SITE);
-  aplicarFiltroNosSites(sites);
-});
-
-$('#cardRetrasadoSaiuVoltou').off('click').on('click', () => {
-  const sites = dadosDisponibilidade.filter(site => {
-    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-    const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
-    return isSiteBairro(site.SITE) && valRetrasado < 96 && valAnterior > 96 && valAtual < 96;
-  }).map(s => s.SITE);
-  aplicarFiltroNosSites(sites);
-});
-
-$('#cardPassadoAbaixo96').off('click').on('click', () => {
-  const sites = dadosDisponibilidade.filter(site => {
-    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-    return isSiteBairro(site.SITE) && valAnterior < 96;
-  }).map(s => s.SITE);
-  aplicarFiltroNosSites(sites);
-});
-
-$('#cardPassadoSaiuVoltou').off('click').on('click', () => {
-  const sites = dadosDisponibilidade.filter(site => {
-    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-    const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
-    return isSiteBairro(site.SITE) && valAnterior < 96 && valRetrasado > 96 && valAtual < 96;
-  }).map(s => s.SITE);
   aplicarFiltroNosSites(sites);
 });
 
 
 }
-
-$('.dashboard-card').off('mouseenter mouseleave').on('mouseenter', function() {
-  const legend = $(this).attr('data-legend');
-  if (!legend) return;
-  // Remove qualquer legenda anterior deste card
-  $(this).siblings('.card-legend-tooltip').remove();
-  // Cria a legenda fixa logo abaixo do card, dentro do container
-  $('<div class="card-legend-tooltip"></div>')
-    .text(legend)
-    .insertAfter($(this));
-}).on('mouseleave', function() {
-  $(this).siblings('.card-legend-tooltip').remove();
-});
-
 
 async function renderDashboardEvolucao(filtroDdd = null) {
   const snap = await db.ref('mensal').once('value');
@@ -1619,45 +1551,10 @@ podeVirarCritico = dadosFiltrados.filter(site => {
 
   const algumMesRuim = (valAnterior < 96) || (valRetrasado < 96);
 
-  // Regra ajustada: valAtual >= 96 && valAtual < 96.5
-  return algumMesRuim && (valAtual >= 96 && valAtual < 96.5);
+  return algumMesRuim && valAtual < 94;
 }).length;
 
 const projetado = segueCritico + critico;
-// 1 - Número de Sites que no mês retrasado foram <96
-const retrasadoAbaixo96 = dadosFiltrados.filter(site => {
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valRetrasado < 96;
-}).length;
-
-// 2 - Dos que no mês retrasado foram <96, qual foi >96 no mês passado e no mês atual foi <96
-const retrasadoSaiuVoltou = dadosFiltrados.filter(site => {
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valRetrasado < 96 && valAnterior > 96 && valAtual < 96;
-}).length;
-
-// 3 - Número de sites que no mês passado foram <96
-const passadoAbaixo96 = dadosFiltrados.filter(site => {
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valAnterior < 96;
-}).length;
-
-// 4 - Dos meses que no mês passado foram <96 e no retrasado foi >96 e no atual foi <96
-const passadoSaiuVoltou = dadosFiltrados.filter(site => {
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valAnterior < 96 && valRetrasado > 96 && valAtual < 96;
-}).length;
-
-// Extrai os nomes dos meses das colunas dinâmicas
-const mesRetrasadoNome = (colRetrasado || '').replace(/^.*\s/, '');
-const mesAnteriorNome = (colAnterior || '').replace(/^.*\s/, '');
-const mesAtualNome = (colAtual || '').replace(/^.*\s/, '');
-
-
 
 // 🔥 Atualiza os cards
 $('#cardCriticosHoje').text(`Críticos Hoje: ${criticosHoje.length}`);
@@ -1666,15 +1563,9 @@ $('#cardCritico').text(`Crítico: ${critico}`);
 $('#cardPodeSair').text(`Pode Sair: ${podeSair}`);
 $('#cardPodeVirarCritico').text(`Pode Virar Crítico: ${podeVirarCritico}`);
 
-$('#cardRetrasadoAbaixo96').html(`${mesRetrasadoNome} &lt;96: ${retrasadoAbaixo96}`);
-$('#cardRetrasadoSaiuVoltou').html(`Sites de ${mesRetrasadoNome} &lt;96 em ${mesAtualNome}: ${retrasadoSaiuVoltou}`);
-$('#cardPassadoAbaixo96').html(`${mesAnteriorNome} &lt;96: ${passadoAbaixo96}`);
-$('#cardPassadoSaiuVoltou').html(`Sites de ${mesAnteriorNome} &lt;96 em ${mesAtualNome}: ${passadoSaiuVoltou}`);
-
 $('#cardProjetado').text(`Projetado: ${projetado}`);
 
 }
-
 
 
 function aplicarFiltroNosSites(sites) {
@@ -1851,18 +1742,19 @@ $('#editForm').on('submit', function(e) {
     }
   });
 });
-    $('#editBtn').on('click', function(){
-      const inputs = $('#causaInput1, #causaInput2, #causaInput3, #solucaoInput, #responsavelInput');
-      const isDisabled = inputs.prop('disabled');
-      inputs.prop('disabled', !isDisabled);
-      $(this).text(isDisabled ? 'Bloquear' : 'Editar');
-    });
 
-      document.getElementById('editBtn').addEventListener('click', function () {
+
+$('#editBtn').on('click', function(){
+  const inputs = $('#causaInput1, #causaInput2, #causaInput3, #causaOutro1, #causaOutro2, #causaOutro3, #solucaoInput1, #solucaoInput2, #solucaoInput3, #responsavelInput');
+  const isDisabled = inputs.prop('disabled');
+  inputs.prop('disabled', !isDisabled);
+  $(this).text(isDisabled ? 'Bloquear' : 'Editar');
+});
+
+    document.getElementById('editBtn').addEventListener('click', function () {
   const inputs = document.querySelectorAll('#editModal input, #editModal select, #editModal textarea');
   inputs.forEach(input => input.removeAttribute('disabled'));
 });
-
 
   document.addEventListener('input', function (event) {
     if (event.target.classList.contains('auto-resize')) {
@@ -2102,6 +1994,15 @@ function hideUserModal() {
       }
     }, 200);
   });
+
+  $('#editBtn').on('click', function(){
+  const inputs = $('#causaInput1, #causaOutro1, #solucaoInput1, #causaInput2, #causaOutro2, #solucaoInput2, #causaInput3, #causaOutro3, #solucaoInput3, #responsavelInput');
+  const isDisabled = inputs.prop('disabled');
+  inputs.prop('disabled', !isDisabled);
+  
+  const btn = $(this);
+  btn.text(isDisabled ? 'Bloquear' : 'Editar');
+});
   </script>
 </body>
 </html>
