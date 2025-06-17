@@ -1858,6 +1858,11 @@ $('#editForm').on('submit', function(e) {
       $(this).text(isDisabled ? 'Bloquear' : 'Editar');
     });
 
+      document.getElementById('editBtn').addEventListener('click', function () {
+  const inputs = document.querySelectorAll('#editModal input, #editModal select, #editModal textarea');
+  inputs.forEach(input => input.removeAttribute('disabled'));
+});
+
 
   document.addEventListener('input', function (event) {
     if (event.target.classList.contains('auto-resize')) {
