@@ -1475,7 +1475,6 @@ $('.dashboard-card').off('mouseenter mouseleave').on('mouseenter', function() {
   $(this).siblings('.card-legend-tooltip').remove();
 });
 
-
 async function renderDashboardEvolucao(filtroDdd = null) {
   const snap = await db.ref('mensal').once('value');
   const data = snap.val() || {};
@@ -1488,11 +1487,20 @@ async function renderDashboardEvolucao(filtroDdd = null) {
   }
 
   const labels = [], valores = [];
-Object.keys(data).sort().forEach(dataStr => {
-  const [dd, mm] = dataStr.split('-');
-  labels.push(`${dd}/${mm}`);
-  valores.push(data[dataStr]);
-});
+
+  // Data atual menos 1 dia
+  const hoje = new Date();
+  hoje.setDate(hoje.getDate() - 0);
+  const diaLimite = hoje.getDate();
+  const mesAtual1 = String(hoje.getMonth() + 1).padStart(2, '0');
+
+  Object.keys(data).sort().forEach(dataStr => {
+    const [dd, mm] = dataStr.split('-');
+    if (mm === mesAtual1 && parseInt(dd) <= diaLimite) {
+      labels.push(`${dd}/${mm}`);
+      valores.push(data[dataStr]);
+    }
+  });
 
   const ctx = document.getElementById('graficoEvolucao').getContext('2d');
   if (window.chartEvolucao) window.chartEvolucao.destroy();
@@ -1516,164 +1524,147 @@ Object.keys(data).sort().forEach(dataStr => {
         yAxisID: 'y'
       }]
     },
-      options: {
-      responsive: false, // <--- Torna o gráfico fixo
+    options: {
+      responsive: false,
       maintainAspectRatio: false,
-      animation: false, // Desativa animação
-      hover: { mode: null }, // Desativa hover
-      interaction: { mode: null, intersect: false }, // Desativa interação hover
+      animation: false,
+      hover: { mode: null },
+      interaction: { mode: null, intersect: false },
       plugins: {
-  legend: {
-    display: true,
-    position: 'bottom',
-    labels: { 
-      color: textColor, 
-      boxWidth: 12, 
-      padding: 15,
-      font: { size: 25, weight: 'bold' } // <-- Negrito na legenda
-    }
-  },
-  tooltip: {
-    enabled: false
-  },
-  datalabels: {
-    display: true,
-    color: textColor,
-    font: { weight: 'bold', size: 25 },
-    anchor: 'end',
-    align: 'top',
-    formatter: (value) => value
-  }
-},
-scales: {
-  x: {
-    ticks: { color: textColor, maxRotation: 0, minRotation: 0, font: { size: 30, weight: 'bold' } }, // <-- Negrito no eixo X
-    grid: { display: false }
-  },
-  y: {
-    beginAtZero: true,
-    ticks: { display: false },
-    grid: { color: '#eee' },
-    suggestedMax: Math.max(...valores, 1) * 1.5
-  }
-}
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: {
+            color: textColor,
+            boxWidth: 12,
+            padding: 15,
+            font: { size: 25, weight: 'bold' }
+          }
+        },
+        tooltip: {
+          enabled: false
+        },
+        datalabels: {
+          display: true,
+          color: textColor,
+          font: { weight: 'bold', size: 25 },
+          anchor: 'end',
+          align: 'top',
+          formatter: (value) => value
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: textColor, maxRotation: 0, minRotation: 0, font: { size: 30, weight: 'bold' } },
+          grid: { display: false }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { display: false },
+          grid: { color: '#eee' },
+          suggestedMax: Math.max(...valores, 1) * 1.5
+        }
+      }
     },
     plugins: [ChartDataLabels]
   });
 
   // ▼▼▼ LÓGICA DOS 4 CARTÕES ▼▼▼
   const mesAtual = currentMonths.at(-1);
-const mesAnterior = currentMonths.at(-2);
-const mesRetrasado = currentMonths.at(-3);
+  const mesAnterior = currentMonths.at(-2);
+  const mesRetrasado = currentMonths.at(-3);
 
-colCriticidadeAtual = headCols.find(c => 
-  c.toLowerCase().includes('criticidade') && c.toLowerCase().includes(mesAtual.toLowerCase())
-);
-colAnterior = headCols.find(c => c.includes(mesAnterior));
-colRetrasado = headCols.find(c => c.includes(mesRetrasado));
-colAtual = headCols.find(c => c.includes(mesAtual));
+  colCriticidadeAtual = headCols.find(c =>
+    c.toLowerCase().includes('criticidade') && c.toLowerCase().includes(mesAtual.toLowerCase())
+  );
+  colAnterior = headCols.find(c => c.includes(mesAnterior));
+  colRetrasado = headCols.find(c => c.includes(mesRetrasado));
+  colAtual = headCols.find(c => c.includes(mesAtual));
 
-// 🔥 Filtra os CRÍTICOS DE HOJE → exatamente os mesmos do card "Sites Críticos"
-criticosHoje = dadosFiltrados.filter(site => 
-  isSiteBairro(site.SITE) && site[colCriticidadeAtual] === 'Crítico'
-);
+  criticosHoje = dadosFiltrados.filter(site =>
+    isSiteBairro(site.SITE) && site[colCriticidadeAtual] === 'Crítico'
+  );
 
-let segueCritico = 0;
-let critico = 0;
-let podeSair = 0;
+  let segueCritico = 0;
+  let critico = 0;
+  let podeSair = 0;
 
-// 🔥 Loop só nos CRÍTICOS DE HOJE
-criticosHoje.forEach(site => {
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
+  criticosHoje.forEach(site => {
+    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
+    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
+    const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
 
-  const abaixo96Anterior = valAnterior < 96;
-  const abaixo96Retrasado = valRetrasado < 96;
-  const algumMesRuim = abaixo96Anterior || abaixo96Retrasado;
-  const ambosRuins = abaixo96Anterior && abaixo96Retrasado;
+    const abaixo96Anterior = valAnterior < 96;
+    const abaixo96Retrasado = valRetrasado < 96;
+    const algumMesRuim = abaixo96Anterior || abaixo96Retrasado;
+    const ambosRuins = abaixo96Anterior && abaixo96Retrasado;
 
-  if (ambosRuins) {
-    // 🔴 SEGUE CRÍTICO → os dois meses ruins
-    segueCritico++;
-  } else if (algumMesRuim) {
-    // 🔥 Algum dos dois meses é ruim, agora testa o mês atual para classificar:
-    if (valAtual < 94) {
-      // ⚫ CRÍTICO → mês atual < 94 e pelo menos 1 mês passado ruim
-      critico++;
-    } else if (valAtual >= 94 && valAtual < 96) {
-      // 🟡 PODE SAIR → mês atual entre 94 e 96 e pelo menos 1 mês passado ruim
-      podeSair++;
+    if (ambosRuins) {
+      segueCritico++;
+    } else if (algumMesRuim) {
+      if (valAtual < 94) {
+        critico++;
+      } else if (valAtual >= 94 && valAtual < 96) {
+        podeSair++;
+      }
     }
-  }
+  });
 
+  podeVirarCritico = dadosFiltrados.filter(site => {
+    if (!isSiteBairro(site.SITE)) return false;
 
-});
+    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
+    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
+    const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
 
-podeVirarCritico = dadosFiltrados.filter(site => {
-  if (!isSiteBairro(site.SITE)) return false;
+    const algumMesRuim = (valAnterior < 96) || (valRetrasado < 96);
+    return algumMesRuim && (valAtual >= 96 && valAtual < 96.5);
+  }).length;
 
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
+  const projetado = segueCritico + critico;
 
-  const algumMesRuim = (valAnterior < 96) || (valRetrasado < 96);
+  const retrasadoAbaixo96 = dadosFiltrados.filter(site => {
+    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
+    return isSiteBairro(site.SITE) && valRetrasado < 96;
+  }).length;
 
-  // Regra ajustada: valAtual >= 96 && valAtual < 96.5
-  return algumMesRuim && (valAtual >= 96 && valAtual < 96.5);
-}).length;
+  const retrasadoSaiuVoltou = dadosFiltrados.filter(site => {
+    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
+    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
+    const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
+    return isSiteBairro(site.SITE) && valRetrasado < 96 && valAnterior > 96 && valAtual < 96;
+  }).length;
 
-const projetado = segueCritico + critico;
-// 1 - Número de Sites que no mês retrasado foram <96
-const retrasadoAbaixo96 = dadosFiltrados.filter(site => {
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valRetrasado < 96;
-}).length;
+  const passadoAbaixo96 = dadosFiltrados.filter(site => {
+    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
+    return isSiteBairro(site.SITE) && valAnterior < 96;
+  }).length;
 
-// 2 - Dos que no mês retrasado foram <96, qual foi >96 no mês passado e no mês atual foi <96
-const retrasadoSaiuVoltou = dadosFiltrados.filter(site => {
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valRetrasado < 96 && valAnterior > 96 && valAtual < 96;
-}).length;
+  const passadoSaiuVoltou = dadosFiltrados.filter(site => {
+    const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
+    const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
+    const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
+    return isSiteBairro(site.SITE) && valAnterior < 96 && valRetrasado > 96 && valAtual < 96;
+  }).length;
 
-// 3 - Número de sites que no mês passado foram <96
-const passadoAbaixo96 = dadosFiltrados.filter(site => {
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valAnterior < 96;
-}).length;
+  const mesRetrasadoNome = (colRetrasado || '').replace(/^.*\s/, '');
+  const mesAnteriorNome = (colAnterior || '').replace(/^.*\s/, '');
+  const mesAtualNome = (colAtual || '').replace(/^.*\s/, '');
 
-// 4 - Dos meses que no mês passado foram <96 e no retrasado foi >96 e no atual foi <96
-const passadoSaiuVoltou = dadosFiltrados.filter(site => {
-  const valRetrasado = parseFloat(site[colRetrasado]?.toString().replace(',', '.') || 100);
-  const valAnterior = parseFloat(site[colAnterior]?.toString().replace(',', '.') || 100);
-  const valAtual = parseFloat(site[colAtual]?.toString().replace(',', '.') || 100);
-  return isSiteBairro(site.SITE) && valAnterior < 96 && valRetrasado > 96 && valAtual < 96;
-}).length;
+  $('#cardCriticosHoje').text(`Críticos Hoje: ${criticosHoje.length}`);
+  $('#cardSegueCritico').text(`Segue Crítico: ${segueCritico}`);
+  $('#cardCritico').text(`Crítico: ${critico}`);
+  $('#cardPodeSair').text(`Pode Sair: ${podeSair}`);
+  $('#cardPodeVirarCritico').text(`Pode Virar Crítico: ${podeVirarCritico}`);
 
-// Extrai os nomes dos meses das colunas dinâmicas
-const mesRetrasadoNome = (colRetrasado || '').replace(/^.*\s/, '');
-const mesAnteriorNome = (colAnterior || '').replace(/^.*\s/, '');
-const mesAtualNome = (colAtual || '').replace(/^.*\s/, '');
+  $('#cardRetrasadoAbaixo96').html(`${mesRetrasadoNome} &lt;96: ${retrasadoAbaixo96}`);
+  $('#cardRetrasadoSaiuVoltou').html(`Sites de ${mesRetrasadoNome} &lt;96 em ${mesAtualNome}: ${retrasadoSaiuVoltou}`);
+  $('#cardPassadoAbaixo96').html(`${mesAnteriorNome} &lt;96: ${passadoAbaixo96}`);
+  $('#cardPassadoSaiuVoltou').html(`Sites de ${mesAnteriorNome} &lt;96 em ${mesAtualNome}: ${passadoSaiuVoltou}`);
 
-
-
-// 🔥 Atualiza os cards
-$('#cardCriticosHoje').text(`Críticos Hoje: ${criticosHoje.length}`);
-$('#cardSegueCritico').text(`Segue Crítico: ${segueCritico}`);
-$('#cardCritico').text(`Crítico: ${critico}`);
-$('#cardPodeSair').text(`Pode Sair: ${podeSair}`);
-$('#cardPodeVirarCritico').text(`Pode Virar Crítico: ${podeVirarCritico}`);
-
-$('#cardRetrasadoAbaixo96').html(`${mesRetrasadoNome} &lt;96: ${retrasadoAbaixo96}`);
-$('#cardRetrasadoSaiuVoltou').html(`Sites de ${mesRetrasadoNome} &lt;96 em ${mesAtualNome}: ${retrasadoSaiuVoltou}`);
-$('#cardPassadoAbaixo96').html(`${mesAnteriorNome} &lt;96: ${passadoAbaixo96}`);
-$('#cardPassadoSaiuVoltou').html(`Sites de ${mesAnteriorNome} &lt;96 em ${mesAtualNome}: ${passadoSaiuVoltou}`);
-
-$('#cardProjetado').text(`Projetado: ${projetado}`);
-
+  $('#cardProjetado').text(`Projetado: ${projetado}`);
 }
+
 
 
 
@@ -2111,3 +2102,4 @@ function hideUserModal() {
   </script>
 </body>
 </html>
+
